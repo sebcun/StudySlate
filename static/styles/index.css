@@ -1,0 +1,10 @@
+body {
+  background: linear-gradient(to bottom, #f0f8ff, #ffffff);
+  font-family: "Outfit", sans-serif;
+  color: #333;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+}

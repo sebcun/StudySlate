@@ -44,16 +44,17 @@
     </div>
     <!-- Modal -->
     <div class="modal fade" id="code-modal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Enter 8-Digit Code</h5>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                 style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
+                <div class="modal-header d-flex justify-content-center position-relative">
+                    <h4 class="modal-title text-center">Enter Your 8-Digit Code</h4>
                     <button type="button"
-                            class="btn-close"
+                            class="btn-close position-absolute end-0 me-3"
                             data-bs-dismiss="modal"
                             aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body text-center" style="padding: 0.75rem 1.5rem;">
                     <p>Check your email for the code.</p>
                     <form id="code-form" class="d-flex justify-content-center">
                         <input type="text"
@@ -101,65 +102,101 @@
                          class="text-danger text-center mt-3"
                          style="display: none"></div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer justify-content-center" style="border-top: none;">
                     <button type="submit" form="code-form" class="btn btn-success">Verify</button>
                 </div>
             </div>
         </div>
     </div>
     <script>
-        document.getElementById('auth-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.style.display = 'none';
+    document.getElementById('auth-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.style.display = 'none';
 
-            try {
-                const response = await fetch('/send-code', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    const modal = new bootstrap.Modal(document.getElementById('code-modal'));
-                    modal.show();
-                } else {
-                    errorDiv.textContent = data.error;
-                    errorDiv.style.display = 'block';
-                }
-            } catch (err) {
-                errorDiv.textContent = 'An error occurred.';
+        try {
+            const response = await fetch('/send-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json();
+            if (data.success) {
+                const modal = new bootstrap.Modal(document.getElementById('code-modal'));
+                modal.show();
+                setTimeout(() => document.querySelector('.code-input').focus(), 100);
+            } else {
+                errorDiv.textContent = data.error;
                 errorDiv.style.display = 'block';
+            }
+        } catch (err) {
+            errorDiv.textContent = 'An error occurred.';
+            errorDiv.style.display = 'block';
+        }
+    });
+
+    const codeInputs = document.querySelectorAll('.code-input');
+    codeInputs.forEach((input, index) => {
+        input.addEventListener('keydown', (e) => {
+            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+            if (!/^\d$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                e.preventDefault();
+            }
+            if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                codeInputs[index - 1].focus();
             }
         });
 
-        document.getElementById('code-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const inputs = document.querySelectorAll('.code-input');
-            const code = Array.from(inputs).map(input => input.value).join('');
-            const email = document.getElementById('email').value;
-            const errorDiv = document.getElementById('verify-error');
-            errorDiv.style.display = 'none';
-
-            try {
-                const response = await fetch('/verify-code', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, code })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    window.location.href = '/dashboard';
-                } else {
-                    errorDiv.textContent = data.error;
-                    errorDiv.style.display = 'block';
-                }
-            } catch (err) {
-                errorDiv.textContent = 'An error occurred.';
-                errorDiv.style.display = 'block';
+        input.addEventListener('input', () => {
+            if (input.value && /^\d$/.test(input.value) && index < codeInputs.length - 1) {
+                codeInputs[index + 1].focus();
             }
         });
+
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text').replace(/\D/g, ''); 
+            if (pasteData.length === 8) {
+                codeInputs.forEach((inp, i) => {
+                    inp.value = pasteData[i] || '';
+                });
+                const nextIndex = Math.min(7, pasteData.length - 1);
+                codeInputs[nextIndex].focus();
+            }
+        });
+
+        input.addEventListener('focus', () => {
+            input.select();
+        });
+    });
+
+    document.getElementById('code-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const inputs = document.querySelectorAll('.code-input');
+        const code = Array.from(inputs).map(input => input.value).join('');
+        const email = document.getElementById('email').value;
+        const errorDiv = document.getElementById('verify-error');
+        errorDiv.style.display = 'none';
+
+        try {
+            const response = await fetch('/verify-code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code })
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = '/dashboard';
+            } else {
+                errorDiv.textContent = data.error;
+                errorDiv.style.display = 'block';
+            }
+        } catch (err) {
+            errorDiv.textContent = 'An error occurred.';
+            errorDiv.style.display = 'block';
+        }
+    });
     </script>
     <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 px-5 my-4 border-top">
         <p class="col-md-4 mb-0 text-body-secondary">&copy; 2025 StudySlate</p>

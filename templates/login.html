@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}
+    Sign Up | StudySlate
+{% endblock title %}
+{% block styles %}
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='styles/login.css') }}" />
+{% endblock styles %}
+{% block content %}
+    <header class="d-flex flex-wrap justify-content-center py-3 border-bottom px-5">
+        <a href="/"
+           class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+            <span class="fs-4">StudySlate</span>
+        </a>
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a href="/login" class="nav-link">Login</a>
+            </li>
+            <li class="nav-item">
+                <a href="/signup" class="nav-link active" aria-current="page">Sign Up</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">Features</a>
+            </li>
+        </ul>
+    </header>
+    <div class="d-flex justify-content-center align-items-start pt-3"
+         style="height: 92vh">
+        <div class="card px-5 pb-5  shadow-lg"
+             style="max-width: 500px;
+                    border-radius: 15px">
+            <h1 class="text-center mt-5">Lock In with StudySlate</h1>
+            <p class="text-center mb-4">Sign up to start your winter study grind.</p>
+            <form id="signup-form" class="d-flex flex-column align-items-center">
+                <input type="email"
+                       id="email"
+                       placeholder="Enter your email"
+                       class="form-control mb-3"
+                       style="max-width: 300px"
+                       required>
+                <button type="submit" class="btn btn-primary">Send Code</button>
+            </form>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal" id="code-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Enter 6-Digit Code</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Check your email for the code.</p>
+                    <form id="code-form" class="d-flex justify-content-center">
+                        <input type="text" maxlength="1" class="code-input" required>
+                        <input type="text" maxlength="1" class="code-input" required>
+                        <input type="text" maxlength="1" class="code-input" required>
+                        <input type="text" maxlength="1" class="code-input" required>
+                        <input type="text" maxlength="1" class="code-input" required>
+                        <input type="text" maxlength="1" class="code-input" required>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" form="code-form" class="btn btn-success">Verify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const modal = new bootstrap.Modal(document.getElementById('code-modal'));
+            modal.show();
+        });
+    </script>
+    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 px-5 my-4 border-top">
+        <p class="col-md-4 mb-0 text-body-secondary">&copy; 2025 StudySlate</p>
+        <a href="/"
+           class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
+           aria-label="Bootstrap">
+            <svg class="bi me-2" width="40" height="32" aria-hidden="true">
+                <use xlink:href="#bootstrap"></use>
+            </svg>
+        </a>
+        <ul class="nav col-md-4 justify-content-end">
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-body-secondary">Home</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-body-secondary">Features</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-body-secondary">Pricing</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-body-secondary">FAQs</a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link px-2 text-body-secondary">About</a>
+            </li>
+        </ul>
+    </footer>
+{% endblock content %}

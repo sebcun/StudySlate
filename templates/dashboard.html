@@ -1,21 +1,97 @@
-{% extends "base.html" %}
-{% block title %}
-    Dashboard | StudySlate
-{% endblock title %}
-{% block content %}
-    <header class="d-flex flex-wrap justify-content-center py-3 border-bottom px-5">
-        <a href="/dashboard"
-           class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-            <span class="fs-4">StudySlate</span>
-        </a>
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a href="/logout" class="nav-link">Logout</a>
-            </li>
-        </ul>
-    </header>
-    <div class="container py-5">
-        <h1>Dashboard</h1>
-        <p>hi</p>
+{% extends "base.html" %} {% block title %} Dashboard | StudySlate {% endblock
+title %} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/dashboard.css') }}"
+/>
+{% endblock styles %} {% block content %}
+<div class="d-flex flex-nowrap vh-100">
+  <div
+    class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+    style="width: 280px"
+  >
+    <a
+      href="/"
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+    >
+      <span class="fs-4 fw-bold">StudySlate</span>
+    </a>
+    <p class="m-0">Classes</p>
+    <hr />
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="/class/classid" class="nav-link">English</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/classid" class="nav-link">Math</a>
+      </li>
+      <hr />
+      <li class="nav-item">
+        <a
+          href="#"
+          class="nav-link"
+          data-bs-toggle="modal"
+          data-bs-target="#create-class-modal"
+          ><i class="bi bi-plus-lg pe-3"></i> New Class</a
+        >
+      </li>
+    </ul>
+    <hr />
+    <div class="dropdown">
+      <a
+        href="#"
+        class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <strong>email</strong>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+        <li>
+          <a class="dropdown-item" href="/logout">Log out</a>
+        </li>
+      </ul>
     </div>
+  </div>
+</div>
+
+<div class="modal fade" id="create-class-modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div
+      class="modal-content"
+      style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)"
+    >
+      <div class="modal-header d-flex justify-content-center position-relative">
+        <h4 class="modal-title text-center">Create a New Class</h4>
+        <button
+          type="button"
+          class="btn-close position-absolute end-0 me-3"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
+        <p>Class Name</p>
+        <form id="create-class-form" class="d-flex justify-content-center">
+          <input
+            type="text"
+            maxlength="30"
+            class="code-input form-control mx-1"
+            required
+          />
+        </form>
+        <div
+          id="verify-error"
+          class="text-danger text-center mt-3"
+          style="display: none"
+        ></div>
+      </div>
+      <div class="modal-footer justify-content-center" style="border-top: none">
+        <button type="submit" form="create-class-form" class="btn btn-success">
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock content %}

@@ -1,0 +1,32 @@
+body {
+  background: linear-gradient(to bottom, #f0f8ff, #ffffff);
+  font-family: "Outfit", sans-serif;
+  color: #333;
+}
+
+.sidebar {
+  background: linear-gradient(to bottom, #d8edff, #f2f9ff);
+}
+
+.nav-link {
+  color: #2c2c2c;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background: none;
+  font-weight: 800;
+}
+
+.modal-header {
+  border-bottom: none;
+  padding-bottom: 0.5rem;
+}
+
+.modal-body {
+  padding-top: 0.5rem;
+}
+
+.modal-content {
+  border-radius: 15px;
+}

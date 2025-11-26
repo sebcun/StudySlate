@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}
-    Sign Up | StudySlate
+    Login / Sign Up | StudySlate
 {% endblock title %}
 {% block styles %}
     <link rel="stylesheet"
@@ -14,10 +14,7 @@
         </a>
         <ul class="nav nav-pills">
             <li class="nav-item">
-                <a href="/login" class="nav-link">Login</a>
-            </li>
-            <li class="nav-item">
-                <a href="/signup" class="nav-link active" aria-current="page">Sign Up</a>
+                <a href="/login" class="nav-link active" aria-current="page">Login / Sign Up</a>
             </li>
             <li class="nav-item">
                 <a href="#" class="nav-link">Features</a>
@@ -30,8 +27,8 @@
              style="max-width: 500px;
                     border-radius: 15px">
             <h1 class="text-center mt-5">Lock In with StudySlate</h1>
-            <p class="text-center mb-4">Sign up to start your winter study grind.</p>
-            <form id="signup-form" class="d-flex flex-column align-items-center">
+            <p class="text-center mb-4">Enter your email to login or sign up for your winter study grind.</p>
+            <form id="auth-form" class="d-flex flex-column align-items-center">
                 <input type="email"
                        id="email"
                        placeholder="Enter your email"
@@ -40,6 +37,9 @@
                        required>
                 <button type="submit" class="btn btn-primary">Send Code</button>
             </form>
+            <div id="error-message"
+                 class="text-danger text-center mt-3"
+                 style="display: none"></div>
         </div>
     </div>
     <!-- Modal -->
@@ -47,7 +47,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Enter 6-Digit Code</h5>
+                    <h5 class="modal-title">Enter 8-Digit Code</h5>
                     <button type="button"
                             class="btn-close"
                             data-bs-dismiss="modal"
@@ -56,13 +56,50 @@
                 <div class="modal-body">
                     <p>Check your email for the code.</p>
                     <form id="code-form" class="d-flex justify-content-center">
-                        <input type="text" maxlength="1" class="code-input" required>
-                        <input type="text" maxlength="1" class="code-input" required>
-                        <input type="text" maxlength="1" class="code-input" required>
-                        <input type="text" maxlength="1" class="code-input" required>
-                        <input type="text" maxlength="1" class="code-input" required>
-                        <input type="text" maxlength="1" class="code-input" required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
+                        <input type="text"
+                               maxlength="1"
+                               class="code-input form-control mx-1"
+                               style="width: 40px"
+                               required>
                     </form>
+                    <div id="verify-error"
+                         class="text-danger text-center mt-3"
+                         style="display: none"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" form="code-form" class="btn btn-success">Verify</button>
@@ -71,11 +108,57 @@
         </div>
     </div>
     <script>
-        document.getElementById('signup-form').addEventListener('submit', function(e) {
+        document.getElementById('auth-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+            const email = document.getElementById('email').value;
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'none';
 
-            const modal = new bootstrap.Modal(document.getElementById('code-modal'));
-            modal.show();
+            try {
+                const response = await fetch('/send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const modal = new bootstrap.Modal(document.getElementById('code-modal'));
+                    modal.show();
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'An error occurred.';
+                errorDiv.style.display = 'block';
+            }
+        });
+
+        document.getElementById('code-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const inputs = document.querySelectorAll('.code-input');
+            const code = Array.from(inputs).map(input => input.value).join('');
+            const email = document.getElementById('email').value;
+            const errorDiv = document.getElementById('verify-error');
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'An error occurred.';
+                errorDiv.style.display = 'block';
+            }
         });
     </script>
     <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 px-5 my-4 border-top">

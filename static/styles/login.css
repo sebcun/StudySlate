@@ -31,3 +31,12 @@ body {
 .code-input:valid {
   border-color: #28a745;
 }
+
+.modal-header {
+  border-bottom: none;
+  padding-bottom: none;
+}
+
+.modal-footer {
+  border-top: none;
+}

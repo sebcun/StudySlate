@@ -12,6 +12,10 @@ SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+def set_supabase_session():
+    if 'access_token' in session and 'refresh_token' in session:
+        supabase.auth.set_session(session['access_token'], session['refresh_token'])
+        
 @app.route('/')
 def home():
     if 'access_token' in session:
@@ -58,6 +62,7 @@ def verify_code():
         response = supabase.auth.verify_otp({'email': email, 'token': code, 'type': 'email'})
         if response.session:
             session['access_token'] = response.session.access_token
+            session['refresh_token'] = response.session.refresh_token
             session['user_id'] = response.user.id
             return jsonify({'success': True})
         else:
@@ -69,6 +74,36 @@ def verify_code():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/api/classes', methods=['GET'])
+def get_classes():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('classes').select('*').eq('user_id', session['user_id']).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/create', methods=['POST'])
+def create_class():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    name = data.get('name')
+    if not name or not name.strip():
+        return jsonify({'error': 'Class name is required'}), 400
+    try:
+        response = supabase.table('classes').insert({'user_id': session['user_id'], 'name': name.strip()}).execute()
+        
+        return jsonify(response.data[0]), 201
+    except Exception as e:
+        print(e)
+        return jsonify({'error': str(e)}), 500
+    
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -6,6 +6,8 @@
 {% block styles %}
   <link rel="stylesheet"
         href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/todo.css') }}" />
 {% endblock styles %}
 {% block content %}
   <div class="d-flex flex-nowrap vh-100">
@@ -25,7 +27,7 @@
           <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
         </li>
         <li class="nav-item">
-          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+          <a href="/class/{{ class_id }}/todo" class="nav-link active">To Do</a>
         </li>
         <li class="nav-item">
           <a href="/class/{{ class_id }}/assigments" class="nav-link">Assignments</a>
@@ -53,20 +55,46 @@
         </ul>
       </div>
     </div>
-    <div class="flex-grow-1 p-3"
-         style="background: linear-gradient(to bottom, #f0f8ff, #ffffff)">
-      <h1>To Do List</h1>
-      <button class="btn btn-primary mb-3"
-              data-bs-toggle="modal"
-              data-bs-target="#add-todo-modal">Add Todo</button>
-      <ul id="todo-list" class="list-group">
-      </ul>
+    <div class="flex-grow-1 d-flex flex-column">
+      <div class="todo-header d-flex justify-content-between align-items-center p-3">
+        <h1>To Do List</h1>
+        <button class="add-todo-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#add-todo-modal">Add</button>
+      </div>
+      <div class="flex-grow-1 p-3" style="overflow-y: auto">
+        <div class="todo-container">
+          <div class="todo-section">
+            <div class="section-title">
+              Active Tasks
+              <span class="section-count" id="active-count">0</span>
+            </div>
+            <div id="active-todos">
+              <div class="empty-state">
+                <div class="empty-state-icon"></div>
+                <div class="empty-state-text">No active tasks. Time to add some goals!</div>
+              </div>
+            </div>
+          </div>
+          <div class="todo-section">
+            <div class="section-title">
+              Completed
+              <span class="section-count" id="completed-count">0</span>
+            </div>
+            <div id="completed-todos">
+              <div class="empty-state">
+                <div class="empty-state-icon"></div>
+                <div class="empty-state-text">Complete tasks to see them here</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="modal fade" id="add-todo-modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content"
-           style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
+      <div class="modal-content">
         <div class="modal-header d-flex justify-content-center position-relative">
           <h4 class="modal-title text-center">Add a New Todo</h4>
           <button type="button"
@@ -74,55 +102,117 @@
                   data-bs-dismiss="modal"
                   aria-label="Close"></button>
         </div>
-        <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
-          <p>Todo Text</p>
-          <form id="add-todo-form" class="d-flex justify-content-center">
-            <input type="text" maxlength="100" class="form-control mx-1" required />
+        <div class="modal-body">
+          <p>What needs to get done?</p>
+          <form id="add-todo-form">
+            <input type="text"
+                   maxlength="100"
+                   class="form-control"
+                   placeholder="Enter your task..."
+                   required />
           </form>
           <div id="todo-error"
                class="text-danger text-center mt-3"
                style="display: none"></div>
         </div>
         <div class="modal-footer justify-content-center" style="border-top: none">
-          <button type="submit" form="add-todo-form" class="btn btn-success">Add</button>
+          <button type="submit" form="add-todo-form" class="btn btn-success">Add Todo</button>
         </div>
       </div>
     </div>
   </div>
   <script>
   const classId = "{{ class_id }}";
+  let todos = [];
+
+  function renderTodos() {
+    const activeTodos = todos.filter(t => !t.done);
+    const completedTodos = todos.filter(t => t.done);
+    
+    activeTodos.sort((a, b) => 
+      b.important - a.important || 
+      new Date(a.created_at) - new Date(b.created_at)
+    );
+    
+    completedTodos.sort((a, b) => 
+      new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)
+    );
+
+    document.getElementById('active-count').textContent = activeTodos.length;
+    document.getElementById('completed-count').textContent = completedTodos.length;
+
+    const activeContainer = document.getElementById('active-todos');
+    const completedContainer = document.getElementById('completed-todos');
+
+    if (activeTodos.length === 0) {
+      activeContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon"></div>
+          <div class="empty-state-text">No active tasks. Time to add some goals!</div>
+        </div>
+      `;
+    } else {
+      activeContainer.innerHTML = activeTodos.map(todo => createTodoHTML(todo)).join('');
+    }
+
+    if (completedTodos.length === 0) {
+      completedContainer.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon"></div>
+          <div class="empty-state-text">Complete tasks to see them here</div>
+        </div>
+      `;
+    } else {
+      completedContainer.innerHTML = completedTodos.map(todo => createTodoHTML(todo)).join('');
+    }
+  }
+
+  function createTodoHTML(todo) {
+    return `
+      <div class="todo-item d-flex align-items-center ${todo.done ? 'completed' : ''}" data-todo-id="${todo.id}">
+        <button class="star-btn ${todo.important ? 'important' : ''}" onclick="toggleImportant('${todo.id}', event)">
+          ${todo.important ? '★' : '☆'}
+        </button>
+        <input type="checkbox" 
+               class="todo-checkbox ms-2" 
+               ${todo.done ? 'checked' : ''} 
+               onchange="toggleTodo('${todo.id}', event)" />
+        <span class="todo-text">${escapeHtml(todo.text)}</span>
+        <button class="delete-btn" onclick="deleteTodo('${todo.id}', event)">Delete</button>
+      </div>
+    `;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
   async function loadTodos() {
     try {
       const response = await fetch(`/api/classes/${classId}/todos`);
       if (!response.ok) throw new Error("Failed to fetch todos");
-      let todos = await response.json();
-      todos.sort(
-        (a, b) =>
-          b.important - a.important ||
-          new Date(a.created_at) - new Date(b.created_at)
-      );
-      const ul = document.getElementById("todo-list");
-      ul.innerHTML = "";
-      todos.forEach((todo) => {
-        const li = document.createElement("li");
-        li.className = "list-group-item d-flex align-items-center";
-        li.innerHTML = `
-        <button class="btn ${ todo.important ? "btn-warning" : "btn-outline-warning" } btn-sm me-2" onclick="toggleImportant('${todo.id}')">★</button>
-        <input type="checkbox" class="form-check-input me-2" ${
-          todo.done ? "checked" : ""
-        } onchange="toggleTodo('${todo.id}')" />
-        <span class="${ todo.done ? "text-decoration-line-through" : "" } flex-grow-1">${todo.text}</span>
-        <button class="btn btn-danger btn-sm ms-2" onclick="deleteTodo('${ todo.id }')">Delete</button>
-      `;
-        ul.appendChild(li);
-      });
+      todos = await response.json();
+      renderTodos();
     } catch (error) {
       console.error("Error loading todos:", error);
     }
   }
 
   async function addTodo(text) {
+    const tempId = 'temp-' + Date.now();
+    const tempTodo = {
+      id: tempId,
+      text: text,
+      done: false,
+      important: false,
+      created_at: new Date().toISOString()
+    };
+    
+    todos.push(tempTodo);
+    renderTodos();
+
     try {
       const response = await fetch(`/api/classes/${classId}/todos`, {
         method: "POST",
@@ -130,55 +220,90 @@
         body: JSON.stringify({ text }),
       });
       if (!response.ok) throw new Error("Failed to add todo");
-      loadTodos();
+      const newTodo = await response.json();
+      
+      todos = todos.map(t => t.id === tempId ? newTodo : t);
+      renderTodos();
     } catch (error) {
       console.error("Error adding todo:", error);
+      todos = todos.filter(t => t.id !== tempId);
+      renderTodos();
     }
   }
 
-  async function toggleImportant(todoId) {
-    const button = event.target;
-    const currentImportant = button.classList.contains("btn-warning");
-    const important = !currentImportant;
+  async function toggleImportant(todoId, event) {
+    event.stopPropagation();
+    const todo = todos.find(t => t.id === todoId);
+    if (!todo) return;
+
+    todo.important = !todo.important;
+    renderTodos();
+
     try {
       const response = await fetch(`/api/classes/${classId}/todos/${todoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ important }),
+        body: JSON.stringify({ important: todo.important }),
       });
       if (!response.ok) throw new Error("Failed to update todo");
-      loadTodos();
     } catch (error) {
       console.error("Error updating todo:", error);
+      todo.important = !todo.important;
+      renderTodos();
     }
   }
 
-  async function toggleTodo(todoId) {
-    const checkbox = event.target;
-    const done = checkbox.checked;
+  async function toggleTodo(todoId, event) {
+    event.stopPropagation();
+    const todo = todos.find(t => t.id === todoId);
+    if (!todo) return;
+
+    const todoElement = document.querySelector(`[data-todo-id="${todoId}"]`);
+    if (todoElement) {
+      todoElement.classList.add('completing');
+    }
+
+    setTimeout(() => {
+      todo.done = !todo.done;
+      todo.updated_at = new Date().toISOString();
+      renderTodos();
+    }, 300);
+
     try {
       const response = await fetch(`/api/classes/${classId}/todos/${todoId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ done }),
+        body: JSON.stringify({ done: todo.done }),
       });
       if (!response.ok) throw new Error("Failed to update todo");
-      loadTodos();
     } catch (error) {
       console.error("Error updating todo:", error);
-      checkbox.checked = !done;
+      todo.done = !todo.done;
+      renderTodos();
     }
   }
 
-  async function deleteTodo(todoId) {
+  async function deleteTodo(todoId, event) {
+    event.stopPropagation();
+    
+    const todoElement = document.querySelector(`[data-todo-id="${todoId}"]`);
+    if (todoElement) {
+      todoElement.classList.add('completing');
+    }
+
+    setTimeout(() => {
+      todos = todos.filter(t => t.id !== todoId);
+      renderTodos();
+    }, 300);
+
     try {
       const response = await fetch(`/api/classes/${classId}/todos/${todoId}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("Failed to delete todo");
-      loadTodos();
     } catch (error) {
       console.error("Error deleting todo:", error);
+      loadTodos();
     }
   }
 

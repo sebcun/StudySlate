@@ -289,6 +289,78 @@ def class_notebook_page(class_id):
     if 'access_token' not in session:
         return redirect(url_for('login'))
     return render_template('class/notebook.html', class_id=class_id)
+
+@app.route('/api/classes/<class_id>/notes', methods=['GET'])
+def get_notes(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        notes_response = supabase.table('notes').select('*').eq('class_id', class_id).eq('user_id', session['user_id']).order('created_at').execute()
+        return jsonify(notes_response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/notes', methods=['POST'])
+def create_note(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    title = data.get('title', 'Untitled')
+    if not title.strip():
+        title = 'Untitled'
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        note_response = supabase.table('notes').insert({'class_id': class_id, 'user_id': session['user_id'], 'title': title.strip(), 'content': ''}).execute()
+        return jsonify(note_response.data[0]), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/notes/<note_id>', methods=['GET'])
+def get_note(class_id, note_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('notes').select('*').eq('id', note_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        else:
+            return jsonify({'error': 'Note not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/notes/<note_id>', methods=['PUT'])
+def update_note(class_id, note_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    updates = {}
+    if 'title' in data:
+        updates['title'] = data['title'].strip() if data['title'].strip() else 'Untitled'
+    if not updates:
+        return jsonify({'error': 'No updates provided'}), 400
+    try:
+        response = supabase.table('notes').update(updates).eq('id', note_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        else:
+            return jsonify({'error': 'Note not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/class/<class_id>/notebook/<note_id>')
+def note_page(class_id, note_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/note.html', class_id=class_id, note_id=note_id)                                                                                                                                                                                                                                
                                                       
 
 if __name__ == '__main__':

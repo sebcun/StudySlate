@@ -390,16 +390,16 @@ title %}
 
     try {
       const htmlContent = `<!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Note</title>
-        </head>
-        <body>
-          ${editor.innerHTML}
-        </body>
-      </html>`;
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Note</title>
+      </head>
+      <body>
+        ${editor.innerHTML}
+      </body>
+    </html>`;
 
       const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
 
@@ -422,7 +422,6 @@ title %}
       button.disabled = false;
     }
   }
-
 
   async function exportTxt() {
     const button = document.getElementById("export-txt");
@@ -512,12 +511,131 @@ title %}
       const note = await response.json();
       const editor = document.querySelector(".notebook-editor");
       editor.innerHTML = note.content || "<h1>Loading...</h1><br><br><br>";
+      makeImagesDraggable();
     } catch (error) {
       console.error("Error loading note:", error);
     }
   }
   let autosaveTimer;
   let minuteTimer;
+
+  function handlePaste(e) {
+    e.preventDefault();
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const items = clipboardData.items;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf("image") !== -1) {
+        const blob = items[i].getAsFile();
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = document.createElement("img");
+          img.src = event.target.result;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "contain";
+          const container = createImageContainer(img);
+          const editor = document.querySelector(".notebook-editor");
+          editor.appendChild(container);
+        };
+        reader.readAsDataURL(blob);
+      }
+    }
+  }
+
+  function createImageContainer(img) {
+    const container = document.createElement("div");
+    container.className = "image-container";
+    container.style.position = "absolute";
+    container.style.left = "100px";
+    container.style.top = "100px";
+    container.style.zIndex = "10";
+    container.style.overflow = "hidden";
+    container.style.cursor = "move";
+    container.style.border = "1px dashed #ccc";
+    container.style.minWidth = "50px";
+    container.style.minHeight = "50px";
+    container.style.width = "200px";
+    container.style.height = "200px";
+    container.appendChild(img);
+
+    const resizeHandle = document.createElement("div");
+    resizeHandle.className = "resize-handle";
+    resizeHandle.style.position = "absolute";
+    resizeHandle.style.bottom = "0";
+    resizeHandle.style.right = "0";
+    resizeHandle.style.width = "10px";
+    resizeHandle.style.height = "10px";
+    resizeHandle.style.background = "#ccc";
+    resizeHandle.style.cursor = "nw-resize";
+    container.appendChild(resizeHandle);
+
+    addDragListeners(container);
+    addResizeListeners(container, resizeHandle);
+    return container;
+  }
+
+  function addResizeListeners(container, handle) {
+    let isResizing = false;
+    let startX, startY, startWidth, startHeight;
+    handle.addEventListener("mousedown", (e) => {
+      isResizing = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startWidth = parseInt(container.style.width || 200);
+      startHeight = parseInt(container.style.height || 200);
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (isResizing) {
+        const newWidth = Math.max(startWidth + (e.clientX - startX), 50);
+        const newHeight = Math.max(startHeight + (e.clientY - startY), 50);
+        container.style.width = newWidth + "px";
+        container.style.height = newHeight + "px";
+      }
+    });
+    document.addEventListener("mouseup", () => {
+      isResizing = false;
+    });
+  }
+
+  function addDragListeners(container) {
+    let isDragging = false;
+    let offsetX, offsetY;
+    container.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      offsetX = e.clientX - parseInt(container.style.left || 0);
+      offsetY = e.clientY - parseInt(container.style.top || 0);
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (isDragging) {
+        container.style.left = e.clientX - offsetX + "px";
+        container.style.top = e.clientY - offsetY + "px";
+      }
+    });
+    document.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+  }
+
+  function makeImagesDraggable() {
+    const editor = document.querySelector(".notebook-editor");
+    const imgs = editor.querySelectorAll("img:not(.image-container img)");
+    imgs.forEach((img) => {
+      const container = createImageContainer(img);
+      img.parentElement.replaceChild(container, img);
+    });
+    const containers = editor.querySelectorAll(".image-container");
+    containers.forEach((container) => {
+      addDragListeners(container);
+      const handle = container.querySelector('.resize-handle');
+      if (handle) {
+        addResizeListeners(container, handle);
+      }
+    });
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
@@ -534,6 +652,7 @@ title %}
       autosaveTimer = setTimeout(saveNote, 3000);
     });
     minuteTimer = setInterval(saveNote, 60000);
+    editor.addEventListener("paste", handlePaste);
   });
   </script>
 {% endblock content %}

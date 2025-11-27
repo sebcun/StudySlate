@@ -109,6 +109,16 @@
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
+.notebook-editor.lined-paper::before {
+  content: "";
+  position: absolute;
+  left: 2.5em;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: red;
+}
+
 .notebook-editor.lined-paper {
   background-image: linear-gradient(
     to bottom,
@@ -118,17 +128,14 @@
     #ddd 1.5em
   );
   background-size: 100% 1.5em;
-  line-height: 1.5em;
   background-attachment: local;
   position: relative;
 }
 
-.notebook-editor.lined-paper::before {
-  content: "";
-  position: absolute;
-  left: 2.5em;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background-color: red;
+.notebook-editor.lined-paper h1 {
+  background-image: none;
+}
+
+.notebook-editor * {
+  line-height: 1.5em;
 }

@@ -144,7 +144,7 @@ title %}
                   aria-label="Close"></button>
         </div>
         <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
-          <div class="row mb-2">
+          <div class="row mb-3">
             <div class="col-6">
               <button class="btn btn-export shadow w-100"
                       id="export-pdf"
@@ -154,6 +154,13 @@ title %}
               <button class="btn btn-export shadow w-100"
                       id="export-txt"
                       onclick="exportTxt()">Export as TXT</button>
+            </div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-6">
+              <button class="btn btn-export shadow w-100"
+                      id="export-html"
+                      onclick="exportHtml()">Export as HTML</button>
             </div>
           </div>
         </div>
@@ -374,71 +381,127 @@ title %}
     }
   }
 
-async function exportTxt() {
-  const button = document.getElementById("export-txt");
-  const editor = document.querySelector(".notebook-editor");
-  
-  button.disabled = true;
-  button.textContent = "Exporting...";
-  
-  try {
-    function htmlToText(html) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      let text = '';
-      let olCounter = 0;
-      
-      function traverse(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          text += node.textContent;
-        } else if (node.tagName === 'BR') {
-          text += '\n';
-        } else if (node.tagName === 'LI') {
-          const parent = node.parentElement;
-          if (parent && parent.tagName === 'UL') {
-            text += '- ';
-          } else if (parent && parent.tagName === 'OL') {
-            olCounter++;
-            text += olCounter + '. ';
-          }
-          node.childNodes.forEach(traverse);
-          text += '\n';
-        } else if (['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL'].includes(node.tagName)) {
-          if (node.tagName === 'OL') olCounter = 0;
-          node.childNodes.forEach(traverse);
-          if (!['UL', 'OL'].includes(node.tagName)) text += '\n';
-        } else {
-          node.childNodes.forEach(traverse);
-        }
-      }
-      
-      tempDiv.childNodes.forEach(traverse);
-      return text.trim();
+  async function exportHtml() {
+    const button = document.getElementById("export-html");
+    const editor = document.querySelector(".notebook-editor");
+
+    button.disabled = true;
+    button.textContent = "Exporting...";
+
+    try {
+      const htmlContent = `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Note</title>
+        </head>
+        <body>
+          ${editor.innerHTML}
+        </body>
+      </html>`;
+
+      const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "note.html";
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      button.textContent = "Export as HTML";
+    } catch (error) {
+      console.error("HTML export failed:", error);
+      alert("Failed to export HTML. Please try again.");
+      button.textContent = "Export as HTML";
+    } finally {
+      button.disabled = false;
     }
-    
-    const text = htmlToText(editor.innerHTML);
-    
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'note.txt';
-    document.body.appendChild(a);
-    a.click();
-    
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    button.textContent = "Export as TXT";
-  } catch (error) {
-    console.error("TXT export failed:", error);
-    alert("Failed to export TXT. Please try again.");
-    button.textContent = "Export as TXT";
-  } finally {
-    button.disabled = false;
   }
-}
+
+
+  async function exportTxt() {
+    const button = document.getElementById("export-txt");
+    const editor = document.querySelector(".notebook-editor");
+
+    button.disabled = true;
+    button.textContent = "Exporting...";
+
+    try {
+      function htmlToText(html) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = html;
+        let text = "";
+        let olCounter = 0;
+
+        function traverse(node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            text += node.textContent;
+          } else if (node.tagName === "BR") {
+            text += "\n";
+          } else if (node.tagName === "LI") {
+            const parent = node.parentElement;
+            if (parent && parent.tagName === "UL") {
+              text += "- ";
+            } else if (parent && parent.tagName === "OL") {
+              olCounter++;
+              text += olCounter + ". ";
+            }
+            node.childNodes.forEach(traverse);
+            text += "\n";
+          } else if (
+            [
+              "P",
+              "DIV",
+              "H1",
+              "H2",
+              "H3",
+              "H4",
+              "H5",
+              "H6",
+              "UL",
+              "OL",
+            ].includes(node.tagName)
+          ) {
+            if (node.tagName === "OL") olCounter = 0;
+            node.childNodes.forEach(traverse);
+            if (!["UL", "OL"].includes(node.tagName)) text += "\n";
+          } else {
+            node.childNodes.forEach(traverse);
+          }
+        }
+
+        tempDiv.childNodes.forEach(traverse);
+        return text.trim();
+      }
+
+      const text = htmlToText(editor.innerHTML);
+
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "note.txt";
+      document.body.appendChild(a);
+      a.click();
+
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      button.textContent = "Export as TXT";
+    } catch (error) {
+      console.error("TXT export failed:", error);
+      alert("Failed to export TXT. Please try again.");
+      button.textContent = "Export as TXT";
+    } finally {
+      button.disabled = false;
+    }
+  }
 
   async function loadNote() {
     const classId = "{{ class_id }}";

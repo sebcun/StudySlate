@@ -270,7 +270,7 @@ title %}
       title = firstH1.textContent.trim();
     }
 
-    const saveBtn = document.getElementById('save-btn');
+    const saveBtn = document.getElementById("save-btn");
     saveBtn.disabled = true;
     saveBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
 
@@ -320,11 +320,13 @@ title %}
       if (!response.ok) throw new Error("Failed to fetch note");
       const note = await response.json();
       const editor = document.querySelector(".notebook-editor");
-      editor.innerHTML = note.content || "<h1>Title</h1><br><br><br>";
+      editor.innerHTML = note.content || "<h1>Loading...</h1><br><br><br>";
     } catch (error) {
       console.error("Error loading note:", error);
     }
   }
+  let autosaveTimer;
+  let minuteTimer;
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
@@ -333,8 +335,14 @@ title %}
     loadNote();
     const editor = document.querySelector(".notebook-editor");
     if (!editor.innerHTML.trim()) {
-      editor.innerHTML = "<h1>Title</h1><br><br><br>";
+      editor.innerHTML = "<h1>Loading...</h1><br><br><br>";
     }
+
+    editor.addEventListener("input", () => {
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(saveNote, 3000);
+    });
+    minuteTimer = setInterval(saveNote, 60000);
   });
   </script>
 {% endblock content %}

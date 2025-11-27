@@ -100,6 +100,23 @@
             </div>
           </div>
         </div>
+        <div class="vr mx-1"></div>
+        <button class="tool-btn"
+                onclick="formatDoc('insertUnorderedList')"
+                title="Bullet List">
+          <i class="bi bi-list-ul"></i>
+        </button>
+        <button class="tool-btn"
+                onclick="formatDoc('insertOrderedList')"
+                title="Numbered List">
+          <i class="bi bi-list-ol"></i>
+        </button>
+        <div class="vr mx-1"></div>
+        <button class="tool-btn"
+                onclick="toggleLinedPaper()"
+                title="Toggle Lined Paper">
+          <i class="bi bi-rulers"></i>
+        </button>
       </div>
       <div class="notebook-editor flex-grow-1 p-5"
            contenteditable="true"
@@ -180,6 +197,11 @@
       document.querySelectorAll('.color-popup').forEach(p => p.classList.remove('show'));
     }
   });
+
+  function toggleLinedPaper() {
+    const editor = document.querySelector('.notebook-editor');
+    editor.classList.toggle('lined-paper');
+  }
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();

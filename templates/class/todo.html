@@ -1,129 +1,155 @@
 {% extends "base.html" %}
 {% block title %}
-    Todo | StudySlate
-{% endblock title %}
+  Todo | StudySlate
+{% endblock title
+%}
 {% block styles %}
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
 {% endblock styles %}
 {% block content %}
-    <div class="d-flex flex-nowrap vh-100">
-        <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
-             style="width: 280px">
-            <a href="/"
-               class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                <span class="fs-4 fw-bold">StudySlate</span>
-            </a>
-            <p class="m-0" id="class-name">Loading...</p>
-            <hr />
-            <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}" class="nav-link">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/assigments" class="nav-link">Assignments</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
-                </li>
-                <hr />
-                <li class="nav-item">
-                    <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
-                </li>
-            </ul>
-            <hr />
-            <div class="dropdown">
-                <a href="#"
-                   class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-                   data-bs-toggle="dropdown"
-                   aria-expanded="false">
-                    <strong>email</strong>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                    <li>
-                        <a class="dropdown-item" href="/logout">Log out</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="flex-grow-1 p-3"
-             style="background: linear-gradient(to bottom, #f0f8ff, #ffffff)">
-            <h1>To Do List</h1>
-            <button class="btn btn-primary mb-3"
-                    data-bs-toggle="modal"
-                    data-bs-target="#add-todo-modal">Add Todo</button>
-            <ul id="todo-list" class="list-group">
-            </ul>
-        </div>
+  <div class="d-flex flex-nowrap vh-100">
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+         style="width: 280px">
+      <a href="/"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4 fw-bold">StudySlate</span>
+      </a>
+      <p class="m-0" id="class-name">Loading...</p>
+      <hr />
+      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/assigments" class="nav-link">Assignments</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown">
+        <a href="#"
+           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <strong>email</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div class="modal fade" id="add-todo-modal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content"
-                 style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
-                <div class="modal-header d-flex justify-content-center position-relative">
-                    <h4 class="modal-title text-center">Add a New Todo</h4>
-                    <button type="button"
-                            class="btn-close position-absolute end-0 me-3"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
-                    <p>Todo Text</p>
-                    <form id="add-todo-form" class="d-flex justify-content-center">
-                        <input type="text" maxlength="100" class="form-control mx-1" required />
-                    </form>
-                    <div id="todo-error"
-                         class="text-danger text-center mt-3"
-                         style="display: none"></div>
-                </div>
-                <div class="modal-footer justify-content-center" style="border-top: none">
-                    <button type="submit" form="add-todo-form" class="btn btn-success">Add</button>
-                </div>
-            </div>
-        </div>
+    <div class="flex-grow-1 p-3"
+         style="background: linear-gradient(to bottom, #f0f8ff, #ffffff)">
+      <h1>To Do List</h1>
+      <button class="btn btn-primary mb-3"
+              data-bs-toggle="modal"
+              data-bs-target="#add-todo-modal">Add Todo</button>
+      <ul id="todo-list" class="list-group">
+      </ul>
     </div>
-    <script>
+  </div>
+  <div class="modal fade" id="add-todo-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content"
+           style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
+        <div class="modal-header d-flex justify-content-center position-relative">
+          <h4 class="modal-title text-center">Add a New Todo</h4>
+          <button type="button"
+                  class="btn-close position-absolute end-0 me-3"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
+          <p>Todo Text</p>
+          <form id="add-todo-form" class="d-flex justify-content-center">
+            <input type="text" maxlength="100" class="form-control mx-1" required />
+          </form>
+          <div id="todo-error"
+               class="text-danger text-center mt-3"
+               style="display: none"></div>
+        </div>
+        <div class="modal-footer justify-content-center" style="border-top: none">
+          <button type="submit" form="add-todo-form" class="btn btn-success">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
   const classId = "{{ class_id }}";
 
   async function loadTodos() {
     try {
       const response = await fetch(`/api/classes/${classId}/todos`);
-      if (!response.ok) throw new Error('Failed to fetch todos');
-      const todos = await response.json();
-      const ul = document.getElementById('todo-list');
-      ul.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex align-items-center';
+      if (!response.ok) throw new Error("Failed to fetch todos");
+      let todos = await response.json();
+      todos.sort(
+        (a, b) =>
+          b.important - a.important ||
+          new Date(a.created_at) - new Date(b.created_at)
+      );
+      const ul = document.getElementById("todo-list");
+      ul.innerHTML = "";
+      todos.forEach((todo) => {
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex align-items-center";
         li.innerHTML = `
-          <input type="checkbox" class="form-check-input me-2" ${todo.done ? 'checked' : ''} onchange="toggleTodo('${todo.id}')" />
-          <span class="${todo.done ? 'text-decoration-line-through' : ''} flex-grow-1">${todo.text}</span>
-          <button class="btn btn-danger btn-sm ms-2" onclick="deleteTodo('${todo.id}')">Delete</button>
-        `;
+        <button class="btn ${ todo.important ? "btn-warning" : "btn-outline-warning" } btn-sm me-2" onclick="toggleImportant('${todo.id}')">★</button>
+        <input type="checkbox" class="form-check-input me-2" ${
+          todo.done ? "checked" : ""
+        } onchange="toggleTodo('${todo.id}')" />
+        <span class="${ todo.done ? "text-decoration-line-through" : "" } flex-grow-1">${todo.text}</span>
+        <button class="btn btn-danger btn-sm ms-2" onclick="deleteTodo('${ todo.id }')">Delete</button>
+      `;
         ul.appendChild(li);
       });
     } catch (error) {
-      console.error('Error loading todos:', error);
+      console.error("Error loading todos:", error);
     }
   }
 
   async function addTodo(text) {
     try {
       const response = await fetch(`/api/classes/${classId}/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
       });
-      if (!response.ok) throw new Error('Failed to add todo');
+      if (!response.ok) throw new Error("Failed to add todo");
       loadTodos();
     } catch (error) {
-      console.error('Error adding todo:', error);
+      console.error("Error adding todo:", error);
+    }
+  }
+
+  async function toggleImportant(todoId) {
+    const button = event.target;
+    const currentImportant = button.classList.contains("btn-warning");
+    const important = !currentImportant;
+    try {
+      const response = await fetch(`/api/classes/${classId}/todos/${todoId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ important }),
+      });
+      if (!response.ok) throw new Error("Failed to update todo");
+      loadTodos();
+    } catch (error) {
+      console.error("Error updating todo:", error);
     }
   }
 
@@ -132,14 +158,14 @@
     const done = checkbox.checked;
     try {
       const response = await fetch(`/api/classes/${classId}/todos/${todoId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ done })
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done }),
       });
-      if (!response.ok) throw new Error('Failed to update todo');
+      if (!response.ok) throw new Error("Failed to update todo");
       loadTodos();
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error("Error updating todo:", error);
       checkbox.checked = !done;
     }
   }
@@ -147,22 +173,24 @@
   async function deleteTodo(todoId) {
     try {
       const response = await fetch(`/api/classes/${classId}/todos/${todoId}`, {
-        method: 'DELETE'
+        method: "DELETE",
       });
-      if (!response.ok) throw new Error('Failed to delete todo');
+      if (!response.ok) throw new Error("Failed to delete todo");
       loadTodos();
     } catch (error) {
-      console.error('Error deleting todo:', error);
+      console.error("Error deleting todo:", error);
     }
   }
 
-  document.getElementById('add-todo-form').addEventListener('submit', (e) => {
+  document.getElementById("add-todo-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const input = e.target.querySelector('input');
+    const input = e.target.querySelector("input");
     const text = input.value.trim();
     if (!text) return;
     addTodo(text);
-    const modal = bootstrap.Modal.getInstance(document.getElementById('add-todo-modal'));
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("add-todo-modal")
+    );
     modal.hide();
     e.target.reset();
   });
@@ -183,5 +211,5 @@
     loadClass();
     loadTodos();
   });
-    </script>
+  </script>
 {% endblock content %}

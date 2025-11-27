@@ -138,7 +138,7 @@ def get_todos(class_id):
         response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
         if not response.data:
             return jsonify({'error': 'Class not found'}), 404
-        todos_response = supabase.table('todos').select('*').eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        todos_response = supabase.table('todos').select('*').eq('class_id', class_id).eq('user_id', session['user_id']).order('important', desc=True).order('created_at').execute()
         return jsonify(todos_response.data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -156,7 +156,7 @@ def create_todo(class_id):
         response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
         if not response.data:
             return jsonify({'error': 'Class not found'}), 404
-        todo_response = supabase.table('todos').insert({'class_id': class_id, 'user_id': session['user_id'], 'text': text.strip(), 'done': False}).execute()
+        todo_response = supabase.table('todos').insert({'class_id': class_id, 'user_id': session['user_id'], 'text': text.strip(), 'done': False, 'important': False}).execute()
         return jsonify(todo_response.data[0]), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -167,11 +167,15 @@ def update_todo(class_id, todo_id):
         return jsonify({'error': 'Unauthorized'}), 401
     set_supabase_session()
     data = request.get_json()
-    done = data.get('done')
-    if done is None:
-        return jsonify({'error': 'Done status is required'}), 400
+    updates = {}
+    if 'done' in data:
+        updates['done'] = data['done']
+    if 'important' in data:
+        updates['important'] = data['important']
+    if not updates:
+        return jsonify({'error': 'No updates provided'}), 400
     try:
-        response = supabase.table('todos').update({'done': done}).eq('id', todo_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        response = supabase.table('todos').update(updates).eq('id', todo_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
         if response.data:
             return jsonify(response.data[0])
         else:

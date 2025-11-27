@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+{% block title %}
+  Assignments | StudySlate
+{% endblock title
+%}
+{% block styles %}
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/assignments.css') }}" />
+{% endblock styles %}
+{% block content %}
+  <div class="d-flex flex-nowrap vh-100">
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+         style="width: 280px">
+      <a href="/"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4 fw-bold">StudySlate</span>
+      </a>
+      <p class="m-0" id="class-name">Loading...</p>
+      <hr />
+      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/assignments" class="nav-link active">Assignments</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown">
+        <a href="#"
+           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <strong>email</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex-grow-1 d-flex flex-column">
+      <div class="todo-header d-flex justify-content-between align-items-center p-3">
+        <h1>Assignments</h1>
+        <button class="add-todo-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#add-assignment-modal">Add</button>
+      </div>
+      <div class="flex-grow-1 p-3" style="overflow-y: auto">
+        <div class="todo-container" id="assignments-container"></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="add-assignment-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header d-flex justify-content-center position-relative">
+          <h4 class="modal-title text-center">Add a New Assignment</h4>
+          <button type="button"
+                  class="btn-close position-absolute end-0 me-3"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>What assignment needs to be completed?</p>
+          <form id="add-assignment-form">
+            <input type="text"
+                   maxlength="100"
+                   class="form-control mb-3"
+                   placeholder="Enter your assignment..."
+                   required />
+            <input type="date" class="form-control" id="due-date" required />
+          </form>
+          <div id="assignment-error"
+               class="text-danger text-center mt-3"
+               style="display: none"></div>
+        </div>
+        <div class="modal-footer justify-content-center" style="border-top: none">
+          <button type="submit" form="add-assignment-form" class="btn btn-success">Add Assignment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  const classId = "{{ class_id }}";
+  let assignments = [];
+
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString();
+  }
+
+  function renderAssignments() {
+    const now = new Date();
+    const overdue = assignments.filter(a => !a.done && new Date(a.due_date) < now);
+    const due = assignments.filter(a => !a.done && new Date(a.due_date) >= now).sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+    const completed = assignments.filter(a => a.done).sort((a, b) => 
+      new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)
+    );
+
+    const container = document.getElementById('assignments-container');
+    let html = '';
+
+    if (overdue.length > 0) {
+      html += `
+        <div class="todo-section">
+          <div class="section-title">
+            Overdue
+            <span class="section-count">${overdue.length}</span>
+          </div>
+          <div id="overdue-assignments">
+            ${overdue.map(a => createAssignmentHTML(a)).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    html += `
+      <div class="todo-section">
+        <div class="section-title">
+          Due
+          <span class="section-count">${due.length}</span>
+        </div>
+        <div id="due-assignments">
+          ${due.length === 0 ? `
+            <div class="empty-state">
+              <div class="empty-state-icon"></div>
+              <div class="empty-state-text">No assignments due. Time to add some!</div>
+            </div>
+          ` : due.map(a => createAssignmentHTML(a)).join('')}
+        </div>
+      </div>
+    `;
+
+    if (overdue.length === 0) {
+      html += `
+        <div class="todo-section">
+          <div class="section-title">
+            Overdue
+            <span class="section-count">0</span>
+          </div>
+          <div id="overdue-assignments">
+            <div class="empty-state">
+              <div class="empty-state-icon"></div>
+              <div class="empty-state-text">No overdue assignments.</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    html += `
+      <div class="todo-section">
+        <div class="section-title">
+          Completed
+          <span class="section-count">${completed.length}</span>
+        </div>
+        <div id="completed-assignments">
+          ${completed.length === 0 ? `
+            <div class="empty-state">
+              <div class="empty-state-icon"></div>
+              <div class="empty-state-text">Complete assignments to see them here</div>
+            </div>
+          ` : completed.map(a => createAssignmentHTML(a)).join('')}
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = html;
+  }
+
+  function createAssignmentHTML(assignment) {
+    const isOverdue = !assignment.done && new Date(assignment.due_date) < new Date();
+    return `
+      <div class="todo-item d-flex align-items-center ${assignment.done ? 'completed' : ''} ${isOverdue ? 'overdue' : ''}" data-assignment-id="${assignment.id}">
+        <input type="checkbox" 
+               class="todo-checkbox ms-2" 
+               ${assignment.done ? 'checked' : ''} 
+               onchange="toggleAssignment('${assignment.id}', event)" />
+        <span class="todo-text">${escapeHtml(assignment.text)}</span>
+        <span class="due-date">Due: ${formatDate(assignment.due_date)}</span>
+        <button class="delete-btn" onclick="deleteAssignment('${assignment.id}', event)">Delete</button>
+      </div>
+    `;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  async function loadAssignments() {
+    try {
+      const response = await fetch(`/api/classes/${classId}/assignments`);
+      if (!response.ok) throw new Error("Failed to fetch assignments");
+      assignments = await response.json();
+      renderAssignments();
+    } catch (error) {
+      console.error("Error loading assignments:", error);
+    }
+  }
+
+  async function addAssignment(text, dueDate) {
+    const tempId = 'temp-' + Date.now();
+    const tempAssignment = {
+      id: tempId,
+      text: text,
+      due_date: dueDate,
+      done: false,
+      created_at: new Date().toISOString()
+    };
+    
+    assignments.push(tempAssignment);
+    renderAssignments();
+
+    try {
+      const response = await fetch(`/api/classes/${classId}/assignments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, due_date: dueDate }),
+      });
+      if (!response.ok) throw new Error("Failed to add assignment");
+      const newAssignment = await response.json();
+      
+      assignments = assignments.map(a => a.id === tempId ? newAssignment : a);
+      renderAssignments();
+    } catch (error) {
+      console.error("Error adding assignment:", error);
+      assignments = assignments.filter(a => a.id !== tempId);
+      renderAssignments();
+    }
+  }
+
+  async function toggleAssignment(assignmentId, event) {
+    event.stopPropagation();
+    const assignment = assignments.find(a => a.id === assignmentId);
+    if (!assignment) return;
+
+    const assignmentElement = document.querySelector(`[data-assignment-id="${assignmentId}"]`);
+    if (assignmentElement) {
+      assignmentElement.classList.add('completing');
+    }
+
+    setTimeout(() => {
+      assignment.done = !assignment.done;
+      assignment.updated_at = new Date().toISOString();
+      renderAssignments();
+    }, 300);
+
+    try {
+      const response = await fetch(`/api/classes/${classId}/assignments/${assignmentId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: assignment.done }),
+      });
+      if (!response.ok) throw new Error("Failed to update assignment");
+    } catch (error) {
+      console.error("Error updating assignment:", error);
+      assignment.done = !assignment.done;
+      renderAssignments();
+    }
+  }
+
+  async function deleteAssignment(assignmentId, event) {
+    event.stopPropagation();
+    
+    const assignmentElement = document.querySelector(`[data-assignment-id="${assignmentId}"]`);
+    if (assignmentElement) {
+      assignmentElement.classList.add('completing');
+    }
+
+    setTimeout(() => {
+      assignments = assignments.filter(a => a.id !== assignmentId);
+      renderAssignments();
+    }, 300);
+
+    try {
+      const response = await fetch(`/api/classes/${classId}/assignments/${assignmentId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete assignment");
+    } catch (error) {
+      console.error("Error deleting assignment:", error);
+      loadAssignments();
+    }
+  }
+
+  document.getElementById("add-assignment-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = e.target.querySelector("input[type='text']");
+    const dueDateInput = document.getElementById("due-date");
+    const text = input.value.trim();
+    const dueDate = dueDateInput.value;
+    if (!text || !dueDate) return;
+    addAssignment(text, dueDate);
+    const modal = bootstrap.Modal.getInstance(
+      document.getElementById("add-assignment-modal")
+    );
+    modal.hide();
+    e.target.reset();
+  });
+
+  async function loadClass() {
+    try {
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
+    } catch (error) {
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadClass();
+    loadAssignments();
+  });
+  </script>
+{% endblock content %}

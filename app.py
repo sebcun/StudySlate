@@ -198,5 +198,85 @@ def delete_todo(class_id, todo_id):
         return jsonify({'error': str(e)}), 500
 
 
+
+
+@app.route('/class/<class_id>/assignments')
+def class_assignments_page(class_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/assignments.html', class_id=class_id)
+
+@app.route('/api/classes/<class_id>/assignments', methods=['GET'])
+def get_assignments(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        assignments_response = supabase.table('assignments').select('*').eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        return jsonify(assignments_response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/assignments', methods=['POST'])
+def create_assignment(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    text = data.get('text')
+    due_date = data.get('due_date')
+    if not text or not text.strip() or not due_date:
+        return jsonify({'error': 'Assignment text and due date are required'}), 400
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        assignment_response = supabase.table('assignments').insert({'class_id': class_id, 'user_id': session['user_id'], 'text': text.strip(), 'due_date': due_date, 'done': False}).execute()
+        return jsonify(assignment_response.data[0]), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/assignments/<assignment_id>', methods=['PUT'])
+def update_assignment(class_id, assignment_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    updates = {}
+    if 'done' in data:
+        updates['done'] = data['done']
+        updates['updated_at'] = 'NOW()'
+    if not updates:
+        return jsonify({'error': 'No updates provided'}), 400
+    try:
+        response = supabase.table('assignments').update(updates).eq('id', assignment_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        else:
+            return jsonify({'error': 'Assignment not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/assignments/<assignment_id>', methods=['DELETE'])
+def delete_assignment(class_id, assignment_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('assignments').delete().eq('id', assignment_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'error': 'Assignment not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+                                                      
+                                                                                    
+
+
 if __name__ == '__main__':
     app.run(debug=True)

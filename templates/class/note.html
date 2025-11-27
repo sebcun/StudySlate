@@ -8,6 +8,7 @@ title %}
         href="{{ url_for('static', filename='styles/dashboard.css') }}" />
   <link rel="stylesheet"
         href="{{ url_for('static', filename='styles/notebook.css') }}" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 {% endblock styles %}
 {% block content %}
   <div class="d-flex flex-nowrap vh-100">
@@ -120,10 +121,43 @@ title %}
         <button id="save-btn" class="tool-btn" onclick="saveNote()" title="Save Note">
           <i class="bi bi-check"></i>
         </button>
+        <button class="tool-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#export-note-modal">
+          <i class="bi bi-share-fill"></i>
+        </button>
       </div>
       <div class="notebook-editor flex-grow-1 p-5"
            contenteditable="true"
            spellcheck="false"></div>
+    </div>
+  </div>
+  <div class="modal fade" id="export-note-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content"
+           style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
+        <div class="modal-header d-flex justify-content-center position-relative">
+          <h4 class="modal-title text-center">Export This Note</h4>
+          <button type="button"
+                  class="btn-close position-absolute end-0 me-3"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
+          <div class="row mb-2">
+            <div class="col-6">
+              <button class="btn btn-export shadow w-100"
+                      id="export-pdf"
+                      onclick="exportPdf()">Export as PDF</button>
+            </div>
+            <div class="col-6">
+              <button class="btn btn-export shadow w-100"
+                      id="export-txt"
+                      onclick="exportTxt()">Export as TXT</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script>
@@ -311,6 +345,35 @@ title %}
       console.error("Error creating note:", error);
     }
   }
+
+async function exportPdf() {
+  const button = document.getElementById("export-pdf");
+  const editor = document.querySelector(".notebook-editor");
+  
+  button.disabled = true;
+  button.textContent = "Exporting...";
+  
+  try {
+    const options = {
+      margin: 1,
+      filename: 'note.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    await html2pdf().set(options).from(editor).save();
+    
+    button.textContent = "Export as PDF";
+  } catch (error) {
+    console.error("PDF export failed:", error);
+    alert("Failed to export PDF. Please try again.");
+    button.textContent = "Export as PDF";
+  } finally {
+    button.disabled = false;
+  }
+}
+
 
   async function loadNote() {
     const classId = "{{ class_id }}";

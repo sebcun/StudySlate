@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}
+  Cuecards | StudySlate
+{% endblock title
+%}
+{% block styles %}
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/cuecards.css') }}" />
+{% endblock styles %}
+{% block content %}
+  <div class="d-flex flex-nowrap vh-100">
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+         style="width: 280px">
+      <a href="/"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4 fw-bold">StudySlate</span>
+      </a>
+      <p class="m-0" id="class-name">Loading...</p>
+      <hr />
+      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/assignments" class="nav-link">Assignments</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown">
+        <a href="#"
+           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <strong>email</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex-grow-1 d-flex flex-column">
+      <div class="todo-header d-flex justify-content-between align-items-center p-3">
+        <h1>Cue Cards</h1>
+        <button class="add-todo-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#add-set-modal">New Set</button>
+      </div>
+      <div class="flex-grow-1 p-3" style="overflow-y: auto">
+        <div class="todo-container">
+          <a href="/class/{{ class_id }}/cuecards/1" class="todo-section">
+            <div class="set-title">Set #1</div>
+            <div class="set-card-number">0 Cards</div>
+          </a>
+          <a href="/class/{{ class_id }}/cuecards/2" class="todo-section">
+            <div class="set-title">Set #2</div>
+            <div class="set-card-number">0 Cards</div>
+          </a>
+          <a href="/class/{{ class_id }}/cuecards/3" class="todo-section">
+            <div class="set-title">Set #3</div>
+            <div class="set-card-number">0 Cards</div>
+          </a>
+          <a data-bs-toggle="modal"
+             data-bs-target="#add-set-modal"
+             class="todo-section-create todo-section">
+            <div class="set-title-icon">
+              <i class="bi bi-plus-circle-fill"></i>
+            </div>
+            <div class="set-card-number">Create New Set</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="add-set-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header d-flex justify-content-center position-relative">
+          <h4 class="modal-title text-center">Create a New Set</h4>
+          <button type="button"
+                  class="btn-close position-absolute end-0 me-3"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Name of the cue card set</p>
+          <form id="add-set-form">
+            <input type="text"
+                   maxlength="100"
+                   class="form-control"
+                   placeholder="Enter the name..."
+                   required />
+          </form>
+          <div id="todo-error"
+               class="text-danger text-center mt-3"
+               style="display: none"></div>
+        </div>
+        <div class="modal-footer justify-content-center" style="border-top: none">
+          <button type="submit" form="add-set-form" class="btn btn-success">Add Set</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  async function loadClass() {
+    const classId = "{{ class_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
+    } catch (error) {
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadClass);
+  </script>
+{% endblock content %}

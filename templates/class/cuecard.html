@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% block title %}
+  Cuecards | StudySlate
+{% endblock title
+%}
+{% block styles %}
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/cuecard.css') }}" />
+{% endblock styles %}
+{% block content %}
+  <div class="d-flex flex-nowrap vh-100">
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+         style="width: 280px">
+      <a href="/"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4 fw-bold">StudySlate</span>
+      </a>
+      <p class="m-0" id="class-name">Loading...</p>
+      <hr />
+      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/assignments" class="nav-link">Assignments</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown">
+        <a href="#"
+           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <strong>email</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex-grow-1 d-flex flex-column">
+      <div class="todo-header d-flex justify-content-between align-items-center p-3">
+        <h1>Cue Cards</h1>
+        <button class="add-todo-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#add-set-modal">New Set</button>
+      </div>
+      <div class="flex-grow-1 p-3" style="overflow-y: auto">
+        <div class="todo-container">
+          <a class="todo-section cuecard-item"
+             data-question="What is the powerhouse of the cell?"
+             data-answer="Mitochondria">
+            <div class="set-title">What is the powerhouse of the cell?</div>
+            <div class="set-card-number"></div>
+          </a>
+          <a data-bs-toggle="modal"
+             data-bs-target="#add-card-modal"
+             class="todo-section-create todo-section">
+            <div class="set-title-icon">
+              <i class="bi bi-plus-circle-fill"></i>
+            </div>
+            <div class="set-card-number">Create New Card</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="add-card-modal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content"
+           style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
+        <div class="modal-header d-flex justify-content-center position-relative">
+          <h4 class="modal-title text-center">New Card</h4>
+          <button type="button"
+                  class="btn-close position-absolute end-0 me-3"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
+          <form id="create-class-form" class="d-flex flex-column align-items-center">
+            <div class="mb-3">
+              <p class="text-center mb-1">Card Name</p>
+              <input type="text" maxlength="100" class="code-input form-control" required />
+            </div>
+            <div class="mb-3">
+              <p class="text-center mb-1">Card Answer</p>
+              <input type="text"
+                     maxlength="10000"
+                     class="code-input form-control"
+                     required />
+            </div>
+          </form>
+          <div id="verify-error"
+               class="text-danger text-center mt-3"
+               style="display: none"></div>
+        </div>
+        <div class="modal-footer justify-content-center" style="border-top: none">
+          <button type="submit" form="create-class-form" class="btn btn-success">Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade"
+       id="edit-card-modal"
+       tabindex="-1"
+       aria-labelledby="editCardModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCardModalLabel">Edit Cue Card</h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-card-form">
+            <div class="mb-3">
+              <label for="card-question" class="form-label fw-bold">Question</label>
+              <input type="text"
+                     class="form-control"
+                     id="card-question"
+                     placeholder="Enter the question..."
+                     required>
+            </div>
+            <div class="mb-3">
+              <label for="card-answer" class="form-label fw-bold">Answer</label>
+              <textarea class="form-control"
+                        id="card-answer"
+                        rows="4"
+                        placeholder="Enter the answer..."
+                        required></textarea>
+            </div>
+            <div id="edit-card-error"
+                 class="text-danger text-center mt-3"
+                 style="display: none"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="delete-card-btn">Delete Card</button>
+          <button type="submit" form="edit-card-form" class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  async function loadClass() {
+    const classId = "{{ class_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
+    } catch (error) {
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
+    }
+  }
+
+  function fadeText(element, newText) {
+    element.style.opacity = 0;
+    setTimeout(() => {
+      element.textContent = newText;
+      element.style.opacity = 1;
+    }, 150);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadClass();
+    const cuecardItems = document.querySelectorAll('.cuecard-item');
+    cuecardItems.forEach(item => {
+      const setCardNumber = item.querySelector('.set-card-number');
+      const setTitle = item.querySelector('.set-title');
+      const originalText = setCardNumber.textContent;
+      const question = item.dataset.question;
+      const answer = item.dataset.answer;
+
+      item.addEventListener('mouseenter', () => {
+        fadeText(setCardNumber, 'Left Click to Reveal Answer, Right Click to Edit');
+      });
+
+      item.addEventListener('mouseleave', () => {
+        fadeText(setCardNumber, originalText);
+        if (setTitle.textContent === answer) {
+          fadeText(setTitle, question);
+          setTitle.style.color = '';
+        }
+      });
+
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (setTitle.textContent === question) {
+          fadeText(setTitle, answer);
+          setTitle.style.color = '#6e6e6e';
+        } else {
+          fadeText(setTitle, question);
+          setTitle.style.color = '';
+        }
+      });
+
+      item.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        document.getElementById('card-question').value = question;
+        document.getElementById('card-answer').value = answer;
+        new bootstrap.Modal(document.getElementById('edit-card-modal')).show();
+      });
+    });
+  });
+  </script>
+{% endblock content %}

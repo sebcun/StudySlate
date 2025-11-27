@@ -15,6 +15,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 def set_supabase_session():
     if 'access_token' in session and 'refresh_token' in session:
         supabase.auth.set_session(session['access_token'], session['refresh_token'])
+        current_session = supabase.auth.get_session()
+        if current_session:
+            session['access_token'] = current_session.access_token
+            session['refresh_token'] = current_session.refresh_token
         
 @app.route('/')
 def home():
@@ -362,8 +366,20 @@ def update_note(class_id, note_id):
 def note_page(class_id, note_id):
     if 'access_token' not in session:
         return redirect(url_for('login'))
-    return render_template('class/note.html', class_id=class_id, note_id=note_id)                                                                                                                                                                                                                                
+    return render_template('class/note.html', class_id=class_id, note_id=note_id)     
+
+@app.route('/class/<class_id>/cuecards')
+def cuecards_page(class_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/cuecards.html', class_id=class_id)    
+
+@app.route('/class/<class_id>/cuecards/<cuecards_id>')
+def cuecard_page(class_id, cuecards_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/cuecard.html', class_id=class_id, cuecards_id=cuecards_id)                                                                                                                                                                                                                              
                                                       
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

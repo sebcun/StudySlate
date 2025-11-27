@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}
+  Notebook | StudySlate
+{% endblock title %}
+{% block styles %}
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/notebook.css') }}" />
+{% endblock styles %}
+{% block content %}
+  <div class="d-flex flex-nowrap vh-100">
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+         style="width: 280px">
+      <a href="/"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4 fw-bold">StudySlate</span>
+      </a>
+      <p class="m-0" id="class-name">Loading...</p>
+      <hr />
+      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/notebook/noteid" class="nav-link">KK1</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-plus-lg pe-3"></i> New Page</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown">
+        <a href="#"
+           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <strong>email</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="d-flex flex-column flex-grow-1 bg-white">
+      <div class="notebook-toolbar p-2 d-flex align-items-center gap-2 flex-wrap">
+        <select class="form-select form-select-sm"
+                style="width: auto"
+                onchange="formatDoc('fontSize', this.value); this.value='3';">
+          <option value="1">Small</option>
+          <option value="3" selected>Normal</option>
+          <option value="5">Large</option>
+          <option value="7">Huge</option>
+        </select>
+        <div class="vr mx-1"></div>
+        <button class="tool-btn" onclick="formatDoc('bold')" title="Bold">
+          <i class="bi bi-type-bold"></i>
+        </button>
+        <button class="tool-btn" onclick="formatDoc('italic')" title="Italic">
+          <i class="bi bi-type-italic"></i>
+        </button>
+        <button class="tool-btn" onclick="formatDoc('underline')" title="Underline">
+          <i class="bi bi-type-underline"></i>
+        </button>
+        <button class="tool-btn"
+                onclick="formatDoc('strikeThrough')"
+                title="Strikethrough">
+          <i class="bi bi-type-strikethrough"></i>
+        </button>
+        <div class="vr mx-1"></div>
+        <div class="color-picker-container">
+          <button class="tool-btn"
+                  onclick="togglePopup('textColorPopup')"
+                  title="Text Color">
+            <i class="bi bi-palette"></i>
+            <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i>
+          </button>
+          <div id="textColorPopup" class="color-popup">
+            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold;">TEXT COLOR</div>
+            <div class="color-grid" id="textColorGrid"></div>
+          </div>
+        </div>
+        <div class="color-picker-container">
+          <button class="tool-btn"
+                  onclick="togglePopup('hiliteColorPopup')"
+                  title="Highlight Color">
+            <i class="bi bi-highlighter"></i>
+            <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i>
+          </button>
+          <div id="hiliteColorPopup" class="color-popup">
+            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold;">HIGHLIGHT</div>
+            <div class="color-grid" id="hiliteColorGrid"></div>
+            <div class="mt-2 pt-2 border-top">
+              <button class="color-swatch no-color-swatch w-100"
+                      onclick="formatDoc('hiliteColor', 'transparent'); togglePopup('hiliteColorPopup')"
+                      title="No Color"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="notebook-editor flex-grow-1 p-5"
+           contenteditable="true"
+           spellcheck="false"></div>
+    </div>
+  </div>
+  <script>
+  async function loadClass() {
+    const classId = "{{ class_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
+    } catch (error) {
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
+    }
+  }
+
+  function formatDoc(cmd, value = null) {
+    if (value) {
+      document.execCommand(cmd, false, value);
+    } else {
+      document.execCommand(cmd);
+    }
+    document.querySelector('.notebook-editor').focus();
+  }
+
+  const textColors = [
+    '#000000', '#434343', '#666666', '#999999', '#b7b7b7',
+    '#d9d9d9', '#ffffff', '#980000', '#ff0000', '#ff9900',
+    '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#0000ff',
+    '#9900ff', '#ff00ff'
+  ];
+
+  const highlightColors = [
+    '#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#0000ff', 
+    '#ff0000', '#000080', '#008000', '#800080', '#808080'
+  ];
+
+  function initColorPickers() {
+    const textGrid = document.getElementById('textColorGrid');
+    const hiliteGrid = document.getElementById('hiliteColorGrid');
+
+    textColors.forEach(color => {
+      const btn = document.createElement('button');
+      btn.className = 'color-swatch';
+      btn.style.backgroundColor = color;
+      btn.onclick = () => {
+        formatDoc('foreColor', color);
+        togglePopup('textColorPopup');
+      };
+      textGrid.appendChild(btn);
+    });
+
+    highlightColors.forEach(color => {
+      const btn = document.createElement('button');
+      btn.className = 'color-swatch';
+      btn.style.backgroundColor = color;
+      btn.onclick = () => {
+        formatDoc('hiliteColor', color);
+        togglePopup('hiliteColorPopup');
+      };
+      hiliteGrid.appendChild(btn);
+    });
+  }
+
+  function togglePopup(id) {
+    document.querySelectorAll('.color-popup').forEach(p => {
+      if (p.id !== id) p.classList.remove('show');
+    });
+    document.getElementById(id).classList.toggle('show');
+  }
+
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.color-picker-container')) {
+      document.querySelectorAll('.color-popup').forEach(p => p.classList.remove('show'));
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadClass();
+    initColorPickers();
+});
+  </script>
+{% endblock content %}

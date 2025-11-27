@@ -281,6 +281,14 @@ def class_lockin_page(class_id):
     if 'access_token' not in session:
         return redirect(url_for('login'))
     return render_template('class/lockin.html', class_id=class_id)
+
+                                                      
+                                                                                    
+@app.route('/class/<class_id>/notebook')
+def class_notebook_page(class_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/notebook.html', class_id=class_id)
                                                       
 
 if __name__ == '__main__':

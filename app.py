@@ -345,6 +345,8 @@ def update_note(class_id, note_id):
     updates = {}
     if 'title' in data:
         updates['title'] = data['title'].strip() if data['title'].strip() else 'Untitled'
+    if 'content' in data:
+        updates['content'] = data['content'] 
     if not updates:
         return jsonify({'error': 'No updates provided'}), 400
     try:

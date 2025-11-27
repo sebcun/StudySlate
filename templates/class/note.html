@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}
   Notebook | StudySlate
-{% endblock title %}
+{% endblock
+title %}
 {% block styles %}
   <link rel="stylesheet"
         href="{{ url_for('static', filename='styles/dashboard.css') }}" />
@@ -74,10 +75,10 @@
                   onclick="togglePopup('textColorPopup')"
                   title="Text Color">
             <i class="bi bi-palette"></i>
-            <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i>
+            <i class="bi bi-chevron-down ms-1" style="font-size: 10px"></i>
           </button>
           <div id="textColorPopup" class="color-popup">
-            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold;">TEXT COLOR</div>
+            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold">TEXT COLOR</div>
             <div class="color-grid" id="textColorGrid"></div>
           </div>
         </div>
@@ -86,10 +87,10 @@
                   onclick="togglePopup('hiliteColorPopup')"
                   title="Highlight Color">
             <i class="bi bi-highlighter"></i>
-            <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i>
+            <i class="bi bi-chevron-down ms-1" style="font-size: 10px"></i>
           </button>
           <div id="hiliteColorPopup" class="color-popup">
-            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold;">HIGHLIGHT</div>
+            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold">HIGHLIGHT</div>
             <div class="color-grid" id="hiliteColorGrid"></div>
             <div class="mt-2 pt-2 border-top">
               <button class="color-swatch no-color-swatch w-100"
@@ -114,6 +115,10 @@
                 onclick="toggleLinedPaper()"
                 title="Toggle Lined Paper">
           <i class="bi bi-rulers"></i>
+        </button>
+        <div class="vr mx-1"></div>
+        <button class="tool-btn" onclick="saveNote()" title="Save Note">
+          <i class="bi bi-check"></i>
         </button>
       </div>
       <div class="notebook-editor flex-grow-1 p-5"
@@ -141,68 +146,92 @@
     } else {
       document.execCommand(cmd);
     }
-    document.querySelector('.notebook-editor').focus();
+    document.querySelector(".notebook-editor").focus();
   }
 
   const textColors = [
-    '#000000', '#434343', '#666666', '#999999', '#b7b7b7',
-    '#d9d9d9', '#ffffff', '#980000', '#ff0000', '#ff9900',
-    '#ffff00', '#00ff00', '#00ffff', '#4a86e8', '#0000ff',
-    '#9900ff', '#ff00ff'
+    "#000000",
+    "#434343",
+    "#666666",
+    "#999999",
+    "#b7b7b7",
+    "#d9d9d9",
+    "#ffffff",
+    "#980000",
+    "#ff0000",
+    "#ff9900",
+    "#ffff00",
+    "#00ff00",
+    "#00ffff",
+    "#4a86e8",
+    "#0000ff",
+    "#9900ff",
+    "#ff00ff",
   ];
 
   const highlightColors = [
-    '#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#0000ff', 
-    '#ff0000', '#000080', '#008000', '#800080', '#808080'
+    "#ffff00",
+    "#00ff00",
+    "#00ffff",
+    "#ff00ff",
+    "#0000ff",
+    "#ff0000",
+    "#000080",
+    "#008000",
+    "#800080",
+    "#808080",
   ];
 
   function initColorPickers() {
-    const textGrid = document.getElementById('textColorGrid');
-    const hiliteGrid = document.getElementById('hiliteColorGrid');
+    const textGrid = document.getElementById("textColorGrid");
+    const hiliteGrid = document.getElementById("hiliteColorGrid");
 
-    textColors.forEach(color => {
-      const btn = document.createElement('button');
-      btn.className = 'color-swatch';
+    textColors.forEach((color) => {
+      const btn = document.createElement("button");
+      btn.className = "color-swatch";
       btn.style.backgroundColor = color;
       btn.onclick = () => {
-        formatDoc('foreColor', color);
-        togglePopup('textColorPopup');
+        formatDoc("foreColor", color);
+        togglePopup("textColorPopup");
       };
       textGrid.appendChild(btn);
     });
 
-    highlightColors.forEach(color => {
-      const btn = document.createElement('button');
-      btn.className = 'color-swatch';
+    highlightColors.forEach((color) => {
+      const btn = document.createElement("button");
+      btn.className = "color-swatch";
       btn.style.backgroundColor = color;
       btn.onclick = () => {
-        formatDoc('hiliteColor', color);
-        togglePopup('hiliteColorPopup');
+        formatDoc("hiliteColor", color);
+        togglePopup("hiliteColorPopup");
       };
       hiliteGrid.appendChild(btn);
     });
   }
 
   function togglePopup(id) {
-    document.querySelectorAll('.color-popup').forEach(p => {
-      if (p.id !== id) p.classList.remove('show');
+    document.querySelectorAll(".color-popup").forEach((p) => {
+      if (p.id !== id) p.classList.remove("show");
     });
-    document.getElementById(id).classList.toggle('show');
+    document.getElementById(id).classList.toggle("show");
   }
 
-  document.addEventListener('click', function(event) {
-    if (!event.target.closest('.color-picker-container')) {
-      document.querySelectorAll('.color-popup').forEach(p => p.classList.remove('show'));
+  document.addEventListener("click", function (event) {
+    if (!event.target.closest(".color-picker-container")) {
+      document
+        .querySelectorAll(".color-popup")
+        .forEach((p) => p.classList.remove("show"));
     }
   });
 
   function toggleLinedPaper() {
-    const editor = document.querySelector('.notebook-editor');
-    editor.classList.toggle('lined-paper');
+    const editor = document.querySelector(".notebook-editor");
+    editor.classList.toggle("lined-paper");
   }
 
   async function loadNotes() {
     const classId = "{{ class_id }}";
+    const noteId = "{{ note_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}/notes`);
       if (!response.ok) throw new Error("Failed to fetch notes");
@@ -227,13 +256,41 @@
     }
   }
 
+  async function saveNote() {
+    const editor = document.querySelector(".notebook-editor");
+    const content = editor.innerHTML;
+
+    const classId = "{{ class_id }}";
+    const noteId = "{{ note_id }}";
+    let title = "Untitled";
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = content;
+    const firstH1 = tempDiv.querySelector("h1");
+    if (firstH1 && firstH1.textContent.trim()) {
+      title = firstH1.textContent.trim();
+    }
+
+    try {
+      const response = await fetch(`/api/classes/${classId}/notes/${noteId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content }),
+      });
+      if (!response.ok) throw new Error("Failed to save note");
+      console.log("Note saved successfully");
+    } catch (error) {
+      console.error("Error saving note:", error);
+    }
+  }
+
   async function createNote() {
     const classId = "{{ class_id }}";
+    const noteId = "{{ note_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}/notes`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title: 'Untitled'})
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Untitled" }),
       });
       if (response.ok) {
         const note = await response.json();
@@ -244,13 +301,28 @@
     }
   }
 
+  async function loadNote() {
+    const classId = "{{ class_id }}";
+    const noteId = "{{ note_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}/notes/${noteId}`);
+      if (!response.ok) throw new Error("Failed to fetch note");
+      const note = await response.json();
+      const editor = document.querySelector(".notebook-editor");
+      editor.innerHTML = note.content || "<h1>Title</h1><br><br><br>";
+    } catch (error) {
+      console.error("Error loading note:", error);
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
     initColorPickers();
-loadNotes()
-    const editor = document.querySelector('.notebook-editor');
+    loadNotes();
+    loadNote();
+    const editor = document.querySelector(".notebook-editor");
     if (!editor.innerHTML.trim()) {
-      editor.innerHTML = '<h1>Title</h1><br><br><br>';
+      editor.innerHTML = "<h1>Title</h1><br><br><br>";
     }
   });
   </script>

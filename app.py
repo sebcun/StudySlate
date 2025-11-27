@@ -103,6 +103,25 @@ def create_class():
         print(e)
         return jsonify({'error': str(e)}), 500
     
+@app.route('/class/<class_id>')
+def class_page(class_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class.html', class_id=class_id)
+
+@app.route('/api/classes/<class_id>', methods=['GET'])
+def get_class(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('classes').select('*').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        else:
+            return jsonify({'error': 'Class not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
-{% extends "base.html" %} {% block title %} Dashboard | StudySlate {% endblock
-title %} {% block styles %}
+{% extends "base.html" %} {% block title %}Class | StudySlate{% endblock title
+%} {% block styles %}
 <link
   rel="stylesheet"
   href="{{ url_for('static', filename='styles/dashboard.css') }}"
@@ -16,18 +16,47 @@ title %} {% block styles %}
     >
       <span class="fs-4 fw-bold">StudySlate</span>
     </a>
-    <p class="m-0">Classes</p>
+    <p class="m-0" id="class-name">Loading...</p>
     <hr />
 
     <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-      <hr />
+      <li class="nav-item">
+        <a href="/class/5a4b5245-d337-4dd5-8079-11f708b6420f" class="nav-link"
+          >Home</a
+        >
+      </li>
       <li class="nav-item">
         <a
-          href="#"
+          href="/class/5a4b5245-d337-4dd5-8079-11f708b6420f/notebook"
           class="nav-link"
-          data-bs-toggle="modal"
-          data-bs-target="#create-class-modal"
-          ><i class="bi bi-plus-lg pe-3"></i> New Class</a
+          >Notebook</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          href="/class/5a4b5245-d337-4dd5-8079-11f708b6420f/todo"
+          class="nav-link"
+          >To Do</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          href="/class/5a4b5245-d337-4dd5-8079-11f708b6420f/assigments"
+          class="nav-link"
+          >Assignments</a
+        >
+      </li>
+      <li class="nav-item">
+        <a
+          href="/class/5a4b5245-d337-4dd5-8079-11f708b6420f/lockin"
+          class="nav-link"
+          >Lock In Timer</a
+        >
+      </li>
+      <hr />
+      <li class="nav-item">
+        <a href="/dashboard" class="nav-link"
+          ><i class="bi bi-arrow-left pe-3"></i> Back</a
         >
       </li>
     </ul>
@@ -50,103 +79,20 @@ title %} {% block styles %}
   </div>
 </div>
 
-<div class="modal fade" id="create-class-modal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div
-      class="modal-content"
-      style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)"
-    >
-      <div class="modal-header d-flex justify-content-center position-relative">
-        <h4 class="modal-title text-center">Create a New Class</h4>
-        <button
-          type="button"
-          class="btn-close position-absolute end-0 me-3"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
-        <p>Class Name</p>
-        <form id="create-class-form" class="d-flex justify-content-center">
-          <input
-            type="text"
-            maxlength="30"
-            class="code-input form-control mx-1"
-            required
-          />
-        </form>
-        <div
-          id="verify-error"
-          class="text-danger text-center mt-3"
-          style="display: none"
-        ></div>
-      </div>
-      <div class="modal-footer justify-content-center" style="border-top: none">
-        <button type="submit" form="create-class-form" class="btn btn-success">
-          Create
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-  async function loadClasses() {
+  async function loadClass() {
+    const classId = "{{ class_id }}";
     try {
-      const response = await fetch("/api/classes");
-      if (!response.ok) throw new Error("Failed to fetch classes");
-      const classes = await response.json();
-      const ul = document.getElementById("classes-list");
-      const newClassLi = ul.querySelector("li:last-child");
-      ul.innerHTML = "";
-      ul.appendChild(newClassLi);
-      classes.forEach((cls) => {
-        const li = document.createElement("li");
-        li.className = "nav-item";
-        li.innerHTML = `<a href="/class/${cls.id}" class="nav-link">${cls.name}</a>`;
-        ul.insertBefore(li, newClassLi);
-      });
-      const hr = document.createElement("hr");
-      ul.insertBefore(hr, newClassLi);
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
     } catch (error) {
-      console.error("Error loading classes:", error);
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
     }
   }
 
-  document
-    .getElementById("create-class-form")
-    .addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const input = e.target.querySelector("input");
-      const name = input.value.trim();
-      if (!name) return;
-      try {
-        const response = await fetch("/api/classes/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name }),
-        });
-        if (!response.ok) throw new Error("Failed to create class");
-        const newClass = await response.json();
-        const ul = document.getElementById("classes-list");
-        const newClassLi = ul.querySelector("li:last-child");
-        const li = document.createElement("li");
-        li.className = "nav-item";
-        li.innerHTML = `<a href="/class/${newClass.id}" class="nav-link">${newClass.name}</a>`;
-        ul.insertBefore(li, newClassLi);
-        const modal = bootstrap.Modal.getInstance(
-          document.getElementById("create-class-modal")
-        );
-        modal.hide();
-        e.target.reset();
-      } catch (error) {
-        console.error("Error creating class:", error);
-        const errorDiv = document.getElementById("verify-error");
-        errorDiv.textContent = "Failed to create class. Please try again.";
-        errorDiv.style.display = "block";
-      }
-    });
-
-  document.addEventListener("DOMContentLoaded", loadClasses);
+  document.addEventListener("DOMContentLoaded", loadClass);
 </script>
 {% endblock content %}

@@ -107,7 +107,13 @@ def create_class():
 def class_page(class_id):
     if 'access_token' not in session:
         return redirect(url_for('login'))
-    return render_template('class.html', class_id=class_id)
+    return render_template('class/class.html', class_id=class_id)
+    
+@app.route('/class/<class_id>/todo')
+def class_todo_page(class_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/todo.html', class_id=class_id)
 
 @app.route('/api/classes/<class_id>', methods=['GET'])
 def get_class(class_id):
@@ -120,6 +126,70 @@ def get_class(class_id):
             return jsonify(response.data[0])
         else:
             return jsonify({'error': 'Class not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/api/classes/<class_id>/todos', methods=['GET'])
+def get_todos(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        todos_response = supabase.table('todos').select('*').eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        return jsonify(todos_response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/todos', methods=['POST'])
+def create_todo(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    text = data.get('text')
+    if not text or not text.strip():
+        return jsonify({'error': 'Todo text is required'}), 400
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        todo_response = supabase.table('todos').insert({'class_id': class_id, 'user_id': session['user_id'], 'text': text.strip(), 'done': False}).execute()
+        return jsonify(todo_response.data[0]), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/todos/<todo_id>', methods=['PUT'])
+def update_todo(class_id, todo_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    done = data.get('done')
+    if done is None:
+        return jsonify({'error': 'Done status is required'}), 400
+    try:
+        response = supabase.table('todos').update({'done': done}).eq('id', todo_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        else:
+            return jsonify({'error': 'Todo not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/todos/<todo_id>', methods=['DELETE'])
+def delete_todo(class_id, todo_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('todos').delete().eq('id', todo_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'error': 'Todo not found'}), 404
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

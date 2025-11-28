@@ -379,7 +379,40 @@ def cuecard_page(class_id, cuecards_id):
     if 'access_token' not in session:
         return redirect(url_for('login'))
     return render_template('class/cuecard.html', class_id=class_id, cuecards_id=cuecards_id)                                                                                                                                                                                                                              
-                                                      
+                
+
+
+@app.route('/api/classes/<class_id>/cuecard_sets', methods=['GET'])
+def get_cuecard_sets(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        sets_response = supabase.table('cuecard_sets').select('*').eq('class_id', class_id).eq('user_id', session['user_id']).order('created_at').execute()
+        return jsonify(sets_response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/cuecard_sets', methods=['POST'])
+def create_cuecard_set(class_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    name = data.get('name')
+    if not name or not name.strip():
+        return jsonify({'error': 'Set name is required'}), 400
+    try:
+        response = supabase.table('classes').select('id').eq('id', class_id).eq('user_id', session['user_id']).execute()
+        if not response.data:
+            return jsonify({'error': 'Class not found'}), 404
+        set_response = supabase.table('cuecard_sets').insert({'class_id': class_id, 'user_id': session['user_id'], 'name': name.strip()}).execute()
+        return jsonify(set_response.data[0]), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500                                    
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

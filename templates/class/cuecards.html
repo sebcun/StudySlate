@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block title %}
   Cuecards | StudySlate
-{% endblock title
-%}
+{% endblock
+title %}
 {% block styles %}
   <link rel="stylesheet"
         href="{{ url_for('static', filename='styles/dashboard.css') }}" />
@@ -66,28 +66,7 @@
                 data-bs-target="#add-set-modal">New Set</button>
       </div>
       <div class="flex-grow-1 p-3" style="overflow-y: auto">
-        <div class="todo-container">
-          <a href="/class/{{ class_id }}/cuecards/1" class="todo-section">
-            <div class="set-title">Set #1</div>
-            <div class="set-card-number">0 Cards</div>
-          </a>
-          <a href="/class/{{ class_id }}/cuecards/2" class="todo-section">
-            <div class="set-title">Set #2</div>
-            <div class="set-card-number">0 Cards</div>
-          </a>
-          <a href="/class/{{ class_id }}/cuecards/3" class="todo-section">
-            <div class="set-title">Set #3</div>
-            <div class="set-card-number">0 Cards</div>
-          </a>
-          <a data-bs-toggle="modal"
-             data-bs-target="#add-set-modal"
-             class="todo-section-create todo-section">
-            <div class="set-title-icon">
-              <i class="bi bi-plus-circle-fill"></i>
-            </div>
-            <div class="set-card-number">Create New Set</div>
-          </a>
-        </div>
+        <div id="sets-container" class="todo-container"></div>
       </div>
     </div>
   </div>
@@ -134,6 +113,66 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", loadClass);
+  async function loadSets() {
+    const classId = "{{ class_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}/cuecard_sets`);
+      if (!response.ok) throw new Error("Failed to fetch sets");
+      const sets = await response.json();
+      const container = document.getElementById("sets-container");
+      container.innerHTML =
+        sets
+          .map(
+            (set) => `
+        <a href="/class/${classId}/cuecards/${set.id}" class="todo-section">
+          <div class="set-title">${set.name}</div>
+          <div class="set-card-number">0 Cards</div>
+        </a>
+      `
+          )
+          .join("") +
+        `
+        <a data-bs-toggle="modal" data-bs-target="#add-set-modal" class="todo-section-create todo-section">
+          <div class="set-title-icon">
+            <i class="bi bi-plus-circle-fill"></i>
+          </div>
+          <div class="set-card-number">Create New Set</div>
+        </a>
+      `;
+    } catch (error) {
+      console.error("Error loading sets:", error);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadClass();
+    loadSets();
+  });
+
+  document
+    .getElementById("add-set-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const classId = "{{ class_id }}";
+      const name = e.target.querySelector("input").value.trim();
+      if (!name) return;
+      try {
+        const response = await fetch(`/api/classes/${classId}/cuecard_sets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (!response.ok) throw new Error("Failed to create set");
+        e.target.querySelector("input").value = "";
+        bootstrap.Modal.getInstance(
+          document.getElementById("add-set-modal")
+        ).hide();
+        loadSets();
+      } catch (error) {
+        console.error("Error creating set:", error);
+        document.getElementById("todo-error").textContent = error.message;
+        document.getElementById("todo-error").style.display = "block";
+      }
+    });
   </script>
 {% endblock content %}

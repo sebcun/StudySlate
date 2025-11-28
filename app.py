@@ -414,5 +414,92 @@ def create_cuecard_set(class_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500                                    
 
+
+
+@app.route('/api/classes/<class_id>/cuecard_sets/<set_id>', methods=['GET'])
+def get_cuecard_set(class_id, set_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        response = supabase.table('cuecard_sets').select('*').eq('id', set_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if response.data:
+            return jsonify(response.data[0])
+        else:
+            return jsonify({'error': 'Set not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/classes/<class_id>/cuecard_sets/<set_id>/cards', methods=['POST'])
+def create_card(class_id, set_id):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    question = data.get('question', '').strip()
+    answer = data.get('answer', '').strip()
+    if not question or not answer:
+        return jsonify({'error': 'Question and answer are required'}), 400
+    try:
+        set_response = supabase.table('cuecard_sets').select('cards').eq('id', set_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if not set_response.data:
+            return jsonify({'error': 'Set not found'}), 404
+        cards = set_response.data[0]['cards'] or []
+        new_card = {
+            'question': question,
+            'answer': answer,
+            'created_at': 'NOW()',
+            'updated_at': 'NOW()'
+        }
+        cards.append(new_card)
+        update_response = supabase.table('cuecard_sets').update({'cards': cards}).eq('id', set_id).eq('user_id', session['user_id']).execute()
+        return jsonify(new_card), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/cuecard_sets/<set_id>/cards/<int:card_index>', methods=['PUT'])
+def update_card(class_id, set_id, card_index):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    data = request.get_json()
+    question = data.get('question', '').strip()
+    answer = data.get('answer', '').strip()
+    if not question or not answer:
+        return jsonify({'error': 'Question and answer are required'}), 400
+    try:
+        set_response = supabase.table('cuecard_sets').select('cards').eq('id', set_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if not set_response.data:
+            return jsonify({'error': 'Set not found'}), 404
+        cards = set_response.data[0]['cards'] or []
+        if card_index < 0 or card_index >= len(cards):
+            return jsonify({'error': 'Card not found'}), 404
+        cards[card_index]['question'] = question
+        cards[card_index]['answer'] = answer
+        cards[card_index]['updated_at'] = 'NOW()'
+        update_response = supabase.table('cuecard_sets').update({'cards': cards}).eq('id', set_id).eq('user_id', session['user_id']).execute()
+        return jsonify(cards[card_index])
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/classes/<class_id>/cuecard_sets/<set_id>/cards/<int:card_index>', methods=['DELETE'])
+def delete_card(class_id, set_id, card_index):
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    set_supabase_session()
+    try:
+        set_response = supabase.table('cuecard_sets').select('cards').eq('id', set_id).eq('class_id', class_id).eq('user_id', session['user_id']).execute()
+        if not set_response.data:
+            return jsonify({'error': 'Set not found'}), 404
+        cards = set_response.data[0]['cards'] or []
+        if card_index < 0 or card_index >= len(cards):
+            return jsonify({'error': 'Card not found'}), 404
+        deleted_card = cards.pop(card_index)
+        update_response = supabase.table('cuecard_sets').update({'cards': cards}).eq('id', set_id).eq('user_id', session['user_id']).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500                                                                                                                                                                                                                
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

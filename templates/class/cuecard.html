@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block title %}
   Cuecards | StudySlate
-{% endblock title
-%}
+{% endblock
+title %}
 {% block styles %}
   <link rel="stylesheet"
         href="{{ url_for('static', filename='styles/dashboard.css') }}" />
@@ -60,28 +60,13 @@
     </div>
     <div class="flex-grow-1 d-flex flex-column">
       <div class="todo-header d-flex justify-content-between align-items-center p-3">
-        <h1>Cue Cards</h1>
+        <h1 id="set-title">Loading...</h1>
         <button class="add-todo-btn"
                 data-bs-toggle="modal"
                 data-bs-target="#add-set-modal">New Set</button>
       </div>
       <div class="flex-grow-1 p-3" style="overflow-y: auto">
-        <div class="todo-container">
-          <a class="todo-section cuecard-item"
-             data-question="What is the powerhouse of the cell?"
-             data-answer="Mitochondria">
-            <div class="set-title">What is the powerhouse of the cell?</div>
-            <div class="set-card-number"></div>
-          </a>
-          <a data-bs-toggle="modal"
-             data-bs-target="#add-card-modal"
-             class="todo-section-create todo-section">
-            <div class="set-title-icon">
-              <i class="bi bi-plus-circle-fill"></i>
-            </div>
-            <div class="set-card-number">Create New Card</div>
-          </a>
-        </div>
+        <div id="cards-container" class="todo-container"></div>
       </div>
     </div>
   </div>
@@ -100,11 +85,16 @@
           <form id="create-class-form" class="d-flex flex-column align-items-center">
             <div class="mb-3">
               <p class="text-center mb-1">Card Name</p>
-              <input type="text" maxlength="100" class="code-input form-control" required />
+              <input id="card-name-input"
+                     type="text"
+                     maxlength="100"
+                     class="code-input form-control"
+                     required />
             </div>
             <div class="mb-3">
               <p class="text-center mb-1">Card Answer</p>
-              <input type="text"
+              <input id="card-answer-input"
+                     type="text"
                      maxlength="10000"
                      class="code-input form-control"
                      required />
@@ -142,7 +132,7 @@
                      class="form-control"
                      id="card-question"
                      placeholder="Enter the question..."
-                     required>
+                     required />
             </div>
             <div class="mb-3">
               <label for="card-answer" class="form-label fw-bold">Answer</label>
@@ -165,6 +155,9 @@
     </div>
   </div>
   <script>
+  let currentSet = null;
+  let editingIndex = null;
+
   async function loadClass() {
     const classId = "{{ class_id }}";
     try {
@@ -178,6 +171,93 @@
     }
   }
 
+  async function loadSet() {
+    const classId = "{{ class_id }}";
+    const setId = "{{ cuecards_id }}";
+    try {
+      const response = await fetch(
+        `/api/classes/${classId}/cuecard_sets/${setId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch set");
+      currentSet = await response.json();
+      document.getElementById("set-title").textContent = currentSet.name;
+      loadCards();
+    } catch (error) {
+      console.error("Error loading set:", error);
+      document.getElementById("set-title").textContent = "Set not found";
+    }
+  }
+
+  function loadCards() {
+    const container = document.getElementById("cards-container");
+    container.innerHTML =
+      currentSet.cards
+        .map(
+          (card, index) => `
+        <a class="todo-section cuecard-item" data-index="${index}" data-question="${card.question}" data-answer="${card.answer}">
+          <div class="set-title">${card.question}</div>
+          <div class="set-card-number"></div>
+        </a>
+      `
+        )
+        .join("") +
+      `
+        <a data-bs-toggle="modal" data-bs-target="#add-card-modal" class="todo-section-create todo-section">
+          <div class="set-title-icon">
+            <i class="bi bi-plus-circle-fill"></i>
+          </div>
+          <div class="set-card-number">Create New Card</div>
+        </a>
+      `;
+    attachCardEvents();
+  }
+
+  function attachCardEvents() {
+    const cuecardItems = document.querySelectorAll(".cuecard-item");
+    cuecardItems.forEach((item) => {
+      const setCardNumber = item.querySelector(".set-card-number");
+      const setTitle = item.querySelector(".set-title");
+      const originalText = setCardNumber.textContent;
+      const question = item.dataset.question;
+      const answer = item.dataset.answer;
+      const index = item.dataset.index;
+
+      item.addEventListener("mouseenter", () => {
+        fadeText(
+          setCardNumber,
+          "Left Click to Reveal Answer, Right Click to Edit"
+        );
+      });
+
+      item.addEventListener("mouseleave", () => {
+        fadeText(setCardNumber, originalText);
+        if (setTitle.textContent === answer) {
+          fadeText(setTitle, question);
+          setTitle.style.color = "";
+        }
+      });
+
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (setTitle.textContent === question) {
+          fadeText(setTitle, answer);
+          setTitle.style.color = "#6e6e6e";
+        } else {
+          fadeText(setTitle, question);
+          setTitle.style.color = "";
+        }
+      });
+
+      item.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        editingIndex = index;
+        document.getElementById("card-question").value = question;
+        document.getElementById("card-answer").value = answer;
+        new bootstrap.Modal(document.getElementById("edit-card-modal")).show();
+      });
+    });
+  }
+
   function fadeText(element, newText) {
     element.style.opacity = 0;
     setTimeout(() => {
@@ -188,44 +268,98 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
-    const cuecardItems = document.querySelectorAll('.cuecard-item');
-    cuecardItems.forEach(item => {
-      const setCardNumber = item.querySelector('.set-card-number');
-      const setTitle = item.querySelector('.set-title');
-      const originalText = setCardNumber.textContent;
-      const question = item.dataset.question;
-      const answer = item.dataset.answer;
-
-      item.addEventListener('mouseenter', () => {
-        fadeText(setCardNumber, 'Left Click to Reveal Answer, Right Click to Edit');
-      });
-
-      item.addEventListener('mouseleave', () => {
-        fadeText(setCardNumber, originalText);
-        if (setTitle.textContent === answer) {
-          fadeText(setTitle, question);
-          setTitle.style.color = '';
-        }
-      });
-
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (setTitle.textContent === question) {
-          fadeText(setTitle, answer);
-          setTitle.style.color = '#6e6e6e';
-        } else {
-          fadeText(setTitle, question);
-          setTitle.style.color = '';
-        }
-      });
-
-      item.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        document.getElementById('card-question').value = question;
-        document.getElementById('card-answer').value = answer;
-        new bootstrap.Modal(document.getElementById('edit-card-modal')).show();
-      });
-    });
+    loadSet();
   });
+
+  document
+    .getElementById("create-class-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const classId = "{{ class_id }}";
+      const setId = "{{ cuecards_id }}";
+      const question = document
+        .getElementById("card-name-input")
+        .value.trim();
+      const answer = document
+        .getElementById("card-answer-input")
+        .value.trim();
+      if (!question || !answer) return;
+      try {
+        const response = await fetch(
+          `/api/classes/${classId}/cuecard_sets/${setId}/cards`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, answer }),
+          }
+        );
+        if (!response.ok) throw new Error("Failed to create card");
+        document.getElementById("card-name-input").value =
+          "";
+        document.getElementById("card-answer-input").value =
+          "";
+        bootstrap.Modal.getInstance(
+          document.getElementById("add-card-modal")
+        ).hide();
+        loadSet();
+      } catch (error) {
+        console.error("Error creating card:", error);
+        document.getElementById("verify-error").textContent = error.message;
+        document.getElementById("verify-error").style.display = "block";
+      }
+    });
+
+  document
+    .getElementById("edit-card-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const classId = "{{ class_id }}";
+      const setId = "{{ cuecards_id }}";
+      const question = document.getElementById("card-question").value.trim();
+      const answer = document.getElementById("card-answer-input").value.trim();
+      if (!question || !answer || editingIndex === null) return;
+      try {
+        const response = await fetch(
+          `/api/classes/${classId}/cuecard_sets/${setId}/cards/${editingIndex}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, answer }),
+          }
+        );
+        if (!response.ok) throw new Error("Failed to update card");
+        bootstrap.Modal.getInstance(
+          document.getElementById("edit-card-modal")
+        ).hide();
+        loadSet();
+      } catch (error) {
+        console.error("Error updating card:", error);
+        document.getElementById("edit-card-error").textContent = error.message;
+        document.getElementById("edit-card-error").style.display = "block";
+      }
+    });
+
+  document
+    .getElementById("delete-card-btn")
+    .addEventListener("click", async () => {
+      const classId = "{{ class_id }}";
+      const setId = "{{ cuecards_id }}";
+      if (editingIndex === null) return;
+      try {
+        const response = await fetch(
+          `/api/classes/${classId}/cuecard_sets/${setId}/cards/${editingIndex}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) throw new Error("Failed to delete card");
+        bootstrap.Modal.getInstance(
+          document.getElementById("edit-card-modal")
+        ).hide();
+        loadSet();
+      } catch (error) {
+        console.error("Error deleting card:", error);
+      }
+    });
   </script>
 {% endblock content %}

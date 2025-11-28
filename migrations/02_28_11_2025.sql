@@ -1,0 +1,1 @@
+ALTER TABLE cuecard_sets ADD COLUMN cards JSONB DEFAULT '[]'::jsonb;

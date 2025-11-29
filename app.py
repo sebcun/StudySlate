@@ -38,6 +38,12 @@ def login():
         pass
     return render_template('login.html')
 
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        pass
+    return render_template('signup.html')
+
 @app.route('/send-code', methods=['POST'])
 def send_code():
     data = request.get_json()

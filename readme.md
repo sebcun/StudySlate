@@ -10,19 +10,28 @@ An all-in-one study platform designed to help students lock in. I made this as I
 - **Cue Cards**: Create and practice with cuecard sets.
 - **Focus Timer**: A winter themed focus timer.
 
+### Planned Features
+
+- Ability to AI generate cue card sets based on your notes
+- Ability to share cuecards/notes
+- Themes!
+- A desktop app to work offline
+- More cuecard games (recall + more, and animations)
+
 ## Installation
 
 1. **Clone the repo**:
+
    ```bash
    git clone https://github.com/yourusername/studyslate.git
    cd studyslate
    ```
 
-````
 2. **Install dependencies**:
+
 ```bash
 pip install -r requirements.txt
-````
+```
 
 3. **Setup Supabase**:
 

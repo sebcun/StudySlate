@@ -1,152 +1,203 @@
-{% extends "base.html" %}
-{% block title %}
-    Home | StudySlate
-{% endblock title %}
-{% block styles %}
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='styles/index.css') }}" />
-{% endblock styles %}
-{% block content %}
-    <header class="d-flex flex-wrap justify-content-center py-3 border-bottom px-5">
-        <a href="/"
-           class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-            <span class="fs-4">StudySlate</span>
-        </a>
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a href="/login" class="nav-link" aria-current="page">Login</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">Features</a>
-            </li>
-        </ul>
-    </header>
-    <div class="px-4 pt-5 my-5 text-center border-bottom"
-         style="position: relative">
-        <div class="snow">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-        <h1 class="display-4 fw-bold text-body-emphasis">It's Time to Lock In with StudySlate</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">
-                The ultimate all-in-one study website for teens to stay organized, focused, and crush those goals. Add classes, link to external resources, take OneNote-style notes, and set reminders for todos and assignments.
-            </p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
-                <a type="button"
-                   class="btn btn-primary btn-lg px-4 me-sm-3"
-                   href="/signup">Get Started</a>
-                <a type="button"
-                   class="btn btn-outline-secondary btn-lg px-4"
-                   href="/login">Login</a>
-            </div>
-        </div>
-        <div class="overflow-hidden" style="max-height: 30vh">
-            <div class="container px-5">
-                <img src="{{ url_for('static', filename='images/hero_pic.png') }}"
-                     class="img-fluid border rounded-3 shadow-lg mb-4"
-                     alt="Example image"
-                     width="700"
-                     height="500"
-                     loading="lazy" />
-            </div>
-        </div>
+{% extends "base.html" %} {% block title %} Home | StudySlate {% endblock title
+%} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/index.css') }}"
+/>
+{% endblock styles %} {% block content %}
+<header class="d-flex flex-wrap justify-content-center py-3 border-bottom px-5">
+  <a
+    href="/"
+    class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
+  >
+    <span class="fs-4">StudySlate</span>
+  </a>
+  <ul class="nav nav-pills">
+    <li class="nav-item">
+      <a href="/login" class="nav-link" aria-current="page">Login</a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link">Features</a>
+    </li>
+  </ul>
+</header>
+<div
+  class="px-4 pt-5 my-5 text-center border-bottom"
+  style="position: relative"
+>
+  <div class="snow">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+  <h1 class="display-4 fw-bold text-body-emphasis">
+    It's Time to Lock In with StudySlate
+  </h1>
+  <div class="col-lg-6 mx-auto">
+    <p class="lead mb-4">
+      The ultimate all-in-one study website for teens to stay organized,
+      focused, and crush those goals. Add classes, link to external resources,
+      take OneNote-style notes, and set reminders for todos and assignments.
+    </p>
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+      <a
+        type="button"
+        class="btn btn-primary btn-lg px-4 me-sm-3"
+        href="/signup"
+        >Get Started</a
+      >
+      <a
+        type="button"
+        class="btn btn-outline-secondary btn-lg px-4"
+        href="/login"
+        >Login</a
+      >
     </div>
-    <div class="container px-4 py-5" id="featured-3">
-        <h2 class="pb-2 border-bottom">Features</h2>
-        <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
-            <div class="feature col">
-                <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded px-2">
-                    <i class="bi bi-backpack"></i>
-                </div>
-                <h3 class="fs-2 text-body-emphasis">Classes</h3>
-                <p>Keep all of your classes in one place. Keeping track of assignments, todo's and general notes.</p>
-            </div>
-            <div class="feature col">
-                <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded px-2">
-                    <i class="bi bi-bookmarks"></i>
-                </div>
-                <h3 class="fs-2 text-body-emphasis">Notes</h3>
-                <p>Keep track of all content learnt and create notes using the simple note editor, accessable anywhere.</p>
-            </div>
-            <div class="feature col">
-                <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded px-2">
-                    <i class="bi bi-card-text"></i>
-                </div>
-                <h3 class="fs-2 text-body-emphasis">Cue Cards</h3>
-                <p>Use AI or create manual cue cards based on your notes to recall and revise.</p>
-            </div>
-        </div>
+  </div>
+  <div class="overflow-hidden" style="max-height: 30vh">
+    <div class="container px-5">
+      <img
+        src="{{ url_for('static', filename='images/hero_pic.png') }}"
+        class="img-fluid border rounded-3 shadow-lg mb-4"
+        alt="Example image"
+        width="700"
+        height="500"
+        loading="lazy"
+      />
     </div>
-    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 px-5 my-4 border-top">
-        <p class="col-md-4 mb-0 text-body-secondary">&copy; 2025 StudySlate</p>
-        <a href="/"
-           class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
-           aria-label="Bootstrap">
-            <svg class="bi me-2" width="40" height="32" aria-hidden="true">
-                <use xlink:href="#bootstrap"></use>
-            </svg>
-        </a>
-        <ul class="nav col-md-4 justify-content-end">
-            <li class="nav-item">
-                <a href="#" class="nav-link px-2 text-body-secondary">Home</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link px-2 text-body-secondary">Features</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link px-2 text-body-secondary">Pricing</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link px-2 text-body-secondary">FAQs</a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link px-2 text-body-secondary">About</a>
-            </li>
-        </ul>
-    </footer>
-    <div class="modal fade" id="demo-modal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="demoModalLabel">Demo Video</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>If you are coming for Siege and don't want to signup you can view a demo video below. <strong>The theme can be found at the 2:00 minute mark with the lockin timer.</strong></p>
-                    <video controls width="100%">
-                        <source src="{{ url_for('static', filename='images/demo.mp4') }}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-            </div>
-        </div>
+  </div>
+</div>
+<div class="container px-4 py-5" id="featured-3">
+  <h2 class="pb-2 border-bottom">Features</h2>
+  <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+    <div class="feature col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded px-2"
+      >
+        <i class="bi bi-backpack"></i>
+      </div>
+      <h3 class="fs-2 text-body-emphasis">Classes</h3>
+      <p>
+        Keep all of your classes in one place. Keeping track of assignments,
+        todo's and general notes.
+      </p>
     </div>
-    <script>
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = new bootstrap.Modal(
-                document.getElementById("demo-modal")
-            );
-            modal.show();
-        });
-    </script>
+    <div class="feature col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded px-2"
+      >
+        <i class="bi bi-bookmarks"></i>
+      </div>
+      <h3 class="fs-2 text-body-emphasis">Notes</h3>
+      <p>
+        Keep track of all content learnt and create notes using the simple note
+        editor, accessable anywhere.
+      </p>
+    </div>
+    <div class="feature col">
+      <div
+        class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3 rounded px-2"
+      >
+        <i class="bi bi-card-text"></i>
+      </div>
+      <h3 class="fs-2 text-body-emphasis">Cue Cards</h3>
+      <p>
+        Use AI or create manual cue cards based on your notes to recall and
+        revise.
+      </p>
+    </div>
+  </div>
+</div>
+<footer
+  class="d-flex flex-wrap justify-content-between align-items-center py-3 px-5 my-4 border-top"
+>
+  <p class="col-md-4 mb-0 text-body-secondary">&copy; 2025 StudySlate</p>
+  <a
+    href="/"
+    class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
+    aria-label="Bootstrap"
+  >
+    <svg class="bi me-2" width="40" height="32" aria-hidden="true">
+      <use xlink:href="#bootstrap"></use>
+    </svg>
+  </a>
+  <ul class="nav col-md-4 justify-content-end">
+    <li class="nav-item">
+      <a href="#" class="nav-link px-2 text-body-secondary">Home</a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link px-2 text-body-secondary">Features</a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link px-2 text-body-secondary">Pricing</a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link px-2 text-body-secondary">FAQs</a>
+    </li>
+    <li class="nav-item">
+      <a href="#" class="nav-link px-2 text-body-secondary">About</a>
+    </li>
+  </ul>
+</footer>
+<div
+  class="modal fade"
+  id="demo-modal"
+  tabindex="-1"
+  aria-labelledby="demoModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="demoModalLabel">Demo Video</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          If you are coming for Siege and don't want to signup you can view a
+          demo video below.
+          <strong
+            >The theme can be found at the 2:00 minute mark with the lockin
+            timer.</strong
+          >
+        </p>
+        <video controls width="100%">
+          <source
+            src="{{ url_for('static', filename='images/demo.mp4') }}"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const modal = new bootstrap.Modal(document.getElementById("demo-modal"));
+    modal.show();
+  });
+</script>
 {% endblock content %}

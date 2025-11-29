@@ -1,235 +1,275 @@
-{% extends "base.html" %}
-{% block title %}
-    Lock In | StudySlate
-{% endblock title %}
-{% block styles %}
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='styles/lockin.css') }}" />
-{% endblock styles %}
-{% block content %}
-    <div class="d-flex flex-nowrap vh-100">
-        <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
-             style="width: 280px">
-            <a href="/"
-               class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-                <span class="fs-4 fw-bold">StudySlate</span>
-            </a>
-            <p class="m-0" id="class-name">Loading...</p>
-            <hr />
-            <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}" class="nav-link">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/assignments" class="nav-link">Assignments</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/class/{{ class_id }}/lockin" class="nav-link active">Lock In Timer</a>
-                </li>
-                <hr />
-                <li class="nav-item">
-                    <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
-                </li>
-            </ul>
-            <hr />
-            <div class="dropdown">
-                <a href="#"
-                   class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-                   data-bs-toggle="dropdown"
-                   aria-expanded="false">
-                    <strong>Manage Account</strong>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                    <li>
-                        <a class="dropdown-item" href="/logout">Log out</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="flex-grow-1 d-flex flex-column position-relative overflow-hidden"
-             id="lockin-container">
-            <div id="setup-phase"
-                 class="d-flex flex-column align-items-center justify-content-center h-100">
-                <h1 class="display-4 mb-4 fw-bold">Ready to Lock In?</h1>
-                <div class="d-flex align-items-center gap-2">
-                    <input type="number"
-                           id="duration-input"
-                           class="form-control form-control-lg"
-                           placeholder="Minutes"
-                           min="1"
-                           value="25"
-                           style="width: 120px">
-                    <button class="btn btn-primary btn-lg" id="start-btn">Start Storm</button>
-                </div>
-            </div>
-            <div id="active-phase"
-                 class="d-flex flex-column align-items-center justify-content-center h-100 d-none position-relative">
-                <div id="snow-container"></div>
-                <h1 id="timer-display"
-                    class="display-1 fw-bold text-white"
-                    style="z-index: 10;
-                           font-size: 8rem">00:00</h1>
-                <p id="weather-report"
-                   class="fs-3 text-white mt-3 fw-light"
-                   style="z-index: 10">The storm is raging.</p>
-                <div class="d-flex gap-3 mt-5" style="z-index: 10">
-                    <button class="btn btn-outline-light px-4 py-2" id="pause-btn">Pause Storm</button>
-                    <button class="btn btn-outline-danger px-4 py-2" id="stop-btn">Ease Storm</button>
-                </div>
-            </div>
-        </div>
+{% extends "base.html" %} {% block title %} Lock In | StudySlate {% endblock
+title %} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/lockin.css') }}"
+/>
+{% endblock styles %} {% block content %}
+<div class="d-flex flex-nowrap vh-100">
+  <div
+    class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+    style="width: 280px"
+  >
+    <a
+      href="/"
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+    >
+      <span class="fs-4 fw-bold">StudySlate</span>
+    </a>
+    <p class="m-0" id="class-name">Loading...</p>
+    <hr />
+    <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/assignments" class="nav-link"
+          >Assignments</a
+        >
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/lockin" class="nav-link active"
+          >Lock In Timer</a
+        >
+      </li>
+      <hr />
+      <li class="nav-item">
+        <a href="/dashboard" class="nav-link"
+          ><i class="bi bi-arrow-left pe-3"></i> Back</a
+        >
+      </li>
+    </ul>
+    <hr />
+    <div class="dropdown">
+      <a
+        href="#"
+        class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <strong>Manage Account</strong>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+        <li>
+          <a class="dropdown-item" href="/logout">Log out</a>
+        </li>
+      </ul>
     </div>
-    <script>
-    const classId = "{{ class_id }}";
-    let timerInterval;
-    let timeLeft;
-    let snowInterval;
-    let isPaused = false;
+  </div>
+  <div
+    class="flex-grow-1 d-flex flex-column position-relative overflow-hidden"
+    id="lockin-container"
+  >
+    <div
+      id="setup-phase"
+      class="d-flex flex-column align-items-center justify-content-center h-100"
+    >
+      <h1 class="display-4 mb-4 fw-bold">Ready to Lock In?</h1>
+      <div class="d-flex align-items-center gap-2">
+        <input
+          type="number"
+          id="duration-input"
+          class="form-control form-control-lg"
+          placeholder="Minutes"
+          min="1"
+          value="25"
+          style="width: 120px"
+        />
+        <button class="btn btn-primary btn-lg" id="start-btn">
+          Start Storm
+        </button>
+      </div>
+    </div>
+    <div
+      id="active-phase"
+      class="d-flex flex-column align-items-center justify-content-center h-100 d-none position-relative"
+    >
+      <div id="snow-container"></div>
+      <h1
+        id="timer-display"
+        class="display-1 fw-bold text-white"
+        style="z-index: 10; font-size: 8rem"
+      >
+        00:00
+      </h1>
+      <p
+        id="weather-report"
+        class="fs-3 text-white mt-3 fw-light"
+        style="z-index: 10"
+      >
+        The storm is raging.
+      </p>
+      <div class="d-flex gap-3 mt-5" style="z-index: 10">
+        <button class="btn btn-outline-light px-4 py-2" id="pause-btn">
+          Pause Storm
+        </button>
+        <button class="btn btn-outline-danger px-4 py-2" id="stop-btn">
+          Ease Storm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const classId = "{{ class_id }}";
+  let timerInterval;
+  let timeLeft;
+  let snowInterval;
+  let isPaused = false;
 
-    async function loadClass() {
-        try {
-            const response = await fetch(`/api/classes/${classId}`);
-            if (!response.ok) throw new Error("Failed to fetch class");
-            const cls = await response.json();
-            document.getElementById("class-name").textContent = cls.name;
-        } catch (error) {
-            console.error("Error loading class:", error);
-            document.getElementById("class-name").textContent = "Class not found";
-        }
+  async function loadClass() {
+    try {
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
+    } catch (error) {
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
+    }
+  }
+
+  function startTimer() {
+    const duration = parseInt(document.getElementById("duration-input").value);
+    if (!duration || duration <= 0) return;
+
+    timeLeft = duration * 60;
+    isPaused = false;
+    document.getElementById("pause-btn").textContent = "Pause Storm";
+    updateTimerDisplay();
+
+    document.getElementById("setup-phase").classList.add("d-none");
+    document.getElementById("active-phase").classList.remove("d-none");
+    document.getElementById("lockin-container").classList.add("storm-active");
+
+    startSnow();
+    startInterval();
+  }
+
+  function startInterval() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      updateWeatherReport();
+
+      if (timeLeft <= 0) {
+        stopTimer();
+        alert("Storm has passed. Good work!");
+      }
+    }, 1000);
+  }
+
+  function togglePause() {
+    if (isPaused) {
+      isPaused = false;
+      document.getElementById("pause-btn").textContent = "Pause Storm";
+      startSnow();
+      startInterval();
+
+      const snowflakes = document.querySelectorAll(".snowflake");
+      snowflakes.forEach(
+        (flake) => (flake.style.animationPlayState = "running")
+      );
+    } else {
+      isPaused = true;
+      document.getElementById("pause-btn").textContent = "Resume Storm";
+      clearInterval(timerInterval);
+      clearInterval(snowInterval);
+
+      const snowflakes = document.querySelectorAll(".snowflake");
+      snowflakes.forEach(
+        (flake) => (flake.style.animationPlayState = "paused")
+      );
+    }
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    stopSnow();
+    isPaused = false;
+    document.getElementById("setup-phase").classList.remove("d-none");
+    document.getElementById("active-phase").classList.add("d-none");
+    document
+      .getElementById("lockin-container")
+      .classList.remove("storm-active");
+  }
+
+  function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById("timer-display").textContent = `${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  }
+
+  function updateWeatherReport() {
+    const minutes = Math.floor(timeLeft / 60);
+    const report = document.getElementById("weather-report");
+
+    if (minutes > 10) {
+      report.textContent = "Heavy snow. Visibility low. Keep focusing.";
+    } else if (minutes > 5) {
+      report.textContent = "Storm is steady. Stay locked in.";
+    } else if (minutes > 2) {
+      report.textContent = "Winds are dying down.";
+    } else {
+      report.textContent = `Snow is easing in ${minutes + 1} minutes.`;
+    }
+  }
+
+  function createSnowflake() {
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.style.left = Math.random() * 100 + "vw";
+    snowflake.style.animationDuration = Math.random() * 3 + 2 + "s";
+    snowflake.style.opacity = Math.random();
+    const size = Math.random() * 5 + 5 + "px";
+    snowflake.style.width = size;
+    snowflake.style.height = size;
+    snowflake.style.backgroundColor = "white";
+    snowflake.style.borderRadius = "50%";
+
+    if (isPaused) {
+      snowflake.style.animationPlayState = "paused";
     }
 
-    function startTimer() {
-        const duration = parseInt(document.getElementById('duration-input').value);
-        if (!duration || duration <= 0) return;
+    document.getElementById("snow-container").appendChild(snowflake);
 
-        timeLeft = duration * 60;
-        isPaused = false;
-        document.getElementById('pause-btn').textContent = "Pause Storm";
-        updateTimerDisplay();
-        
-        document.getElementById('setup-phase').classList.add('d-none');
-        document.getElementById('active-phase').classList.remove('d-none');
-        document.getElementById('lockin-container').classList.add('storm-active');
-
-        startSnow();
-        startInterval();
-    }
-
-    function startInterval() {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            updateTimerDisplay();
-            updateWeatherReport();
-
-            if (timeLeft <= 0) {
-                stopTimer();
-                alert("Storm has passed. Good work!");
-            }
-        }, 1000);
-    }
-
-    function togglePause() {
-        if (isPaused) {
-            isPaused = false;
-            document.getElementById('pause-btn').textContent = "Pause Storm";
-            startSnow();
-            startInterval();
-            
-            const snowflakes = document.querySelectorAll('.snowflake');
-            snowflakes.forEach(flake => flake.style.animationPlayState = 'running');
-        } else {
-            isPaused = true;
-            document.getElementById('pause-btn').textContent = "Resume Storm";
-            clearInterval(timerInterval);
-            clearInterval(snowInterval);
-            
-            const snowflakes = document.querySelectorAll('.snowflake');
-            snowflakes.forEach(flake => flake.style.animationPlayState = 'paused');
-        }
-    }
-
-    function stopTimer() {
-        clearInterval(timerInterval);
-        stopSnow();
-        isPaused = false;
-        document.getElementById('setup-phase').classList.remove('d-none');
-        document.getElementById('active-phase').classList.add('d-none');
-        document.getElementById('lockin-container').classList.remove('storm-active');
-    }
-
-    function updateTimerDisplay() {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        document.getElementById('timer-display').textContent = 
-            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-
-    function updateWeatherReport() {
-        const minutes = Math.floor(timeLeft / 60);
-        const report = document.getElementById('weather-report');
-        
-        if (minutes > 10) {
-            report.textContent = "Heavy snow. Visibility low. Keep focusing.";
-        } else if (minutes > 5) {
-            report.textContent = "Storm is steady. Stay locked in.";
-        } else if (minutes > 2) {
-            report.textContent = "Winds are dying down.";
-        } else {
-            report.textContent = `Snow is easing in ${minutes + 1} minutes.`;
-        }
-    }
-
-    function createSnowflake() {
-        const snowflake = document.createElement('div');
-        snowflake.classList.add('snowflake');
-        snowflake.style.left = Math.random() * 100 + 'vw';
-        snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
-        snowflake.style.opacity = Math.random();
-        const size = Math.random() * 5 + 5 + 'px';
-        snowflake.style.width = size;
-        snowflake.style.height = size;
-        snowflake.style.backgroundColor = 'white';
-        snowflake.style.borderRadius = '50%';
-        
-        if (isPaused) {
-            snowflake.style.animationPlayState = 'paused';
-        }
-
-        document.getElementById('snow-container').appendChild(snowflake);
-
-        snowflake.addEventListener('animationend', () => {
-            snowflake.remove();
-        });
-    }
-
-    function startSnow() {
-        clearInterval(snowInterval);
-        snowInterval = setInterval(createSnowflake, 50);
-    }
-
-    function stopSnow() {
-        clearInterval(snowInterval);
-        document.getElementById('snow-container').innerHTML = '';
-    }
-
-    document.getElementById('start-btn').addEventListener('click', startTimer);
-    document.getElementById('stop-btn').addEventListener('click', stopTimer);
-    document.getElementById('pause-btn').addEventListener('click', togglePause);
-    
-    document.addEventListener("DOMContentLoaded", () => {
-        loadClass();
+    snowflake.addEventListener("animationend", () => {
+      snowflake.remove();
     });
-    </script>
+  }
+
+  function startSnow() {
+    clearInterval(snowInterval);
+    snowInterval = setInterval(createSnowflake, 50);
+  }
+
+  function stopSnow() {
+    clearInterval(snowInterval);
+    document.getElementById("snow-container").innerHTML = "";
+  }
+
+  document.getElementById("start-btn").addEventListener("click", startTimer);
+  document.getElementById("stop-btn").addEventListener("click", stopTimer);
+  document.getElementById("pause-btn").addEventListener("click", togglePause);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadClass();
+  });
+</script>
 {% endblock content %}

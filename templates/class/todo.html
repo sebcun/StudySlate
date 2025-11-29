@@ -1,150 +1,180 @@
-{% extends "base.html" %}
-{% block title %}
-  Todo | StudySlate
-{% endblock title
-%}
-{% block styles %}
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='styles/todo.css') }}" />
-{% endblock styles %}
-{% block content %}
-  <div class="d-flex flex-nowrap vh-100">
-    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
-         style="width: 280px">
-      <a href="/"
-         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-        <span class="fs-4 fw-bold">StudySlate</span>
-      </a>
-      <p class="m-0" id="class-name">Loading...</p>
+{% extends "base.html" %} {% block title %} Todo | StudySlate {% endblock title
+%} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/todo.css') }}"
+/>
+{% endblock styles %} {% block content %}
+<div class="d-flex flex-nowrap vh-100">
+  <div
+    class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+    style="width: 280px"
+  >
+    <a
+      href="/"
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+    >
+      <span class="fs-4 fw-bold">StudySlate</span>
+    </a>
+    <p class="m-0" id="class-name">Loading...</p>
+    <hr />
+    <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/todo" class="nav-link active">To Do</a>
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/assignments" class="nav-link"
+          >Assignments</a
+        >
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}/lockin" class="nav-link"
+          >Lock In Timer</a
+        >
+      </li>
       <hr />
-      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
-        </li>
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
-        </li>
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
-        </li>
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}/todo" class="nav-link active">To Do</a>
-        </li>
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}/assignments" class="nav-link">Assignments</a>
-        </li>
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
-        </li>
-        <hr />
-        <li class="nav-item">
-          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+      <li class="nav-item">
+        <a href="/dashboard" class="nav-link"
+          ><i class="bi bi-arrow-left pe-3"></i> Back</a
+        >
+      </li>
+    </ul>
+    <hr />
+    <div class="dropdown">
+      <a
+        href="#"
+        class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <strong>Manage Account</strong>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+        <li>
+          <a class="dropdown-item" href="/logout">Log out</a>
         </li>
       </ul>
-      <hr />
-      <div class="dropdown">
-        <a href="#"
-           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-           data-bs-toggle="dropdown"
-           aria-expanded="false">
-          <strong>Manage Account</strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-          <li>
-            <a class="dropdown-item" href="/logout">Log out</a>
-          </li>
-        </ul>
-      </div>
     </div>
-    <div class="flex-grow-1 d-flex flex-column">
-      <div class="todo-header d-flex justify-content-between align-items-center p-3">
-        <h1>To Do List</h1>
-        <button class="add-todo-btn"
-                data-bs-toggle="modal"
-                data-bs-target="#add-todo-modal">Add</button>
-      </div>
-      <div class="flex-grow-1 p-3" style="overflow-y: auto">
-        <div class="todo-container">
-          <div class="todo-section">
-            <div class="section-title">
-              Active Tasks
-              <span class="section-count" id="active-count">0</span>
-            </div>
-            <div id="active-todos">
-              <div class="loading">Loading todos...</div>
-            </div>
+  </div>
+  <div class="flex-grow-1 d-flex flex-column">
+    <div
+      class="todo-header d-flex justify-content-between align-items-center p-3"
+    >
+      <h1>To Do List</h1>
+      <button
+        class="add-todo-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#add-todo-modal"
+      >
+        Add
+      </button>
+    </div>
+    <div class="flex-grow-1 p-3" style="overflow-y: auto">
+      <div class="todo-container">
+        <div class="todo-section">
+          <div class="section-title">
+            Active Tasks
+            <span class="section-count" id="active-count">0</span>
           </div>
-          <div class="todo-section">
-            <div class="section-title">
-              Completed
-              <span class="section-count" id="completed-count">0</span>
-            </div>
-            <div id="completed-todos">
-              <div class="loading">Loading todos...</div>
-            </div>
+          <div id="active-todos">
+            <div class="loading">Loading todos...</div>
+          </div>
+        </div>
+        <div class="todo-section">
+          <div class="section-title">
+            Completed
+            <span class="section-count" id="completed-count">0</span>
+          </div>
+          <div id="completed-todos">
+            <div class="loading">Loading todos...</div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="add-todo-modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header d-flex justify-content-center position-relative">
-          <h4 class="modal-title text-center">Add a New Todo</h4>
-          <button type="button"
-                  class="btn-close position-absolute end-0 me-3"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>What needs to get done?</p>
-          <form id="add-todo-form">
-            <input type="text"
-                   maxlength="100"
-                   class="form-control"
-                   placeholder="Enter your task..."
-                   required />
-          </form>
-          <div id="todo-error"
-               class="text-danger text-center mt-3"
-               style="display: none"></div>
-        </div>
-        <div class="modal-footer justify-content-center" style="border-top: none">
-          <button type="submit" form="add-todo-form" class="btn btn-success">Add Todo</button>
-        </div>
+</div>
+<div class="modal fade" id="add-todo-modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header d-flex justify-content-center position-relative">
+        <h4 class="modal-title text-center">Add a New Todo</h4>
+        <button
+          type="button"
+          class="btn-close position-absolute end-0 me-3"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>What needs to get done?</p>
+        <form id="add-todo-form">
+          <input
+            type="text"
+            maxlength="100"
+            class="form-control"
+            placeholder="Enter your task..."
+            required
+          />
+        </form>
+        <div
+          id="todo-error"
+          class="text-danger text-center mt-3"
+          style="display: none"
+        ></div>
+      </div>
+      <div class="modal-footer justify-content-center" style="border-top: none">
+        <button type="submit" form="add-todo-form" class="btn btn-success">
+          Add Todo
+        </button>
       </div>
     </div>
   </div>
-  <script>
+</div>
+<script>
   const classId = "{{ class_id }}";
   let todos = [];
   let isLoading = true;
 
   function renderTodos() {
-    const activeTodos = todos.filter(t => !t.done);
-    const completedTodos = todos.filter(t => t.done);
-    
-    activeTodos.sort((a, b) => 
-      b.important - a.important || 
-      new Date(a.created_at) - new Date(b.created_at)
-    );
-    
-    completedTodos.sort((a, b) => 
-      new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)
+    const activeTodos = todos.filter((t) => !t.done);
+    const completedTodos = todos.filter((t) => t.done);
+
+    activeTodos.sort(
+      (a, b) =>
+        b.important - a.important ||
+        new Date(a.created_at) - new Date(b.created_at)
     );
 
-    document.getElementById('active-count').textContent = activeTodos.length;
-    document.getElementById('completed-count').textContent = completedTodos.length;
+    completedTodos.sort(
+      (a, b) =>
+        new Date(b.updated_at || b.created_at) -
+        new Date(a.updated_at || a.created_at)
+    );
 
-    const activeContainer = document.getElementById('active-todos');
-    const completedContainer = document.getElementById('completed-todos');
+    document.getElementById("active-count").textContent = activeTodos.length;
+    document.getElementById("completed-count").textContent =
+      completedTodos.length;
+
+    const activeContainer = document.getElementById("active-todos");
+    const completedContainer = document.getElementById("completed-todos");
 
     if (isLoading) {
       activeContainer.innerHTML = '<div class="loading">Loading todos...</div>';
-      completedContainer.innerHTML = '<div class="loading">Loading todos...</div>';
+      completedContainer.innerHTML =
+        '<div class="loading">Loading todos...</div>';
       return;
     }
 
@@ -156,7 +186,9 @@
         </div>
       `;
     } else {
-      activeContainer.innerHTML = activeTodos.map(todo => createTodoHTML(todo)).join('');
+      activeContainer.innerHTML = activeTodos
+        .map((todo) => createTodoHTML(todo))
+        .join("");
     }
 
     if (completedTodos.length === 0) {
@@ -167,28 +199,36 @@
         </div>
       `;
     } else {
-      completedContainer.innerHTML = completedTodos.map(todo => createTodoHTML(todo)).join('');
+      completedContainer.innerHTML = completedTodos
+        .map((todo) => createTodoHTML(todo))
+        .join("");
     }
   }
 
   function createTodoHTML(todo) {
     return `
-      <div class="todo-item d-flex align-items-center ${todo.done ? 'completed' : ''}" data-todo-id="${todo.id}">
-        <button class="star-btn ${todo.important ? 'important' : ''}" onclick="toggleImportant('${todo.id}', event)">
-          ${todo.important ? '★' : '☆'}
+      <div class="todo-item d-flex align-items-center ${
+        todo.done ? "completed" : ""
+      }" data-todo-id="${todo.id}">
+        <button class="star-btn ${
+          todo.important ? "important" : ""
+        }" onclick="toggleImportant('${todo.id}', event)">
+          ${todo.important ? "★" : "☆"}
         </button>
         <input type="checkbox" 
                class="todo-checkbox ms-2" 
-               ${todo.done ? 'checked' : ''} 
+               ${todo.done ? "checked" : ""} 
                onchange="toggleTodo('${todo.id}', event)" />
         <span class="todo-text">${escapeHtml(todo.text)}</span>
-        <button class="delete-btn" onclick="deleteTodo('${todo.id}', event)">Delete</button>
+        <button class="delete-btn" onclick="deleteTodo('${
+          todo.id
+        }', event)">Delete</button>
       </div>
     `;
   }
 
   function escapeHtml(text) {
-    const div = document.createElement('div');
+    const div = document.createElement("div");
     div.textContent = text;
     return div.innerHTML;
   }
@@ -207,15 +247,15 @@
   }
 
   async function addTodo(text) {
-    const tempId = 'temp-' + Date.now();
+    const tempId = "temp-" + Date.now();
     const tempTodo = {
       id: tempId,
       text: text,
       done: false,
       important: false,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
     };
-    
+
     todos.push(tempTodo);
     renderTodos();
 
@@ -227,19 +267,19 @@
       });
       if (!response.ok) throw new Error("Failed to add todo");
       const newTodo = await response.json();
-      
-      todos = todos.map(t => t.id === tempId ? newTodo : t);
+
+      todos = todos.map((t) => (t.id === tempId ? newTodo : t));
       renderTodos();
     } catch (error) {
       console.error("Error adding todo:", error);
-      todos = todos.filter(t => t.id !== tempId);
+      todos = todos.filter((t) => t.id !== tempId);
       renderTodos();
     }
   }
 
   async function toggleImportant(todoId, event) {
     event.stopPropagation();
-    const todo = todos.find(t => t.id === todoId);
+    const todo = todos.find((t) => t.id === todoId);
     if (!todo) return;
 
     todo.important = !todo.important;
@@ -261,12 +301,12 @@
 
   async function toggleTodo(todoId, event) {
     event.stopPropagation();
-    const todo = todos.find(t => t.id === todoId);
+    const todo = todos.find((t) => t.id === todoId);
     if (!todo) return;
 
     const todoElement = document.querySelector(`[data-todo-id="${todoId}"]`);
     if (todoElement) {
-      todoElement.classList.add('completing');
+      todoElement.classList.add("completing");
     }
 
     setTimeout(() => {
@@ -291,14 +331,14 @@
 
   async function deleteTodo(todoId, event) {
     event.stopPropagation();
-    
+
     const todoElement = document.querySelector(`[data-todo-id="${todoId}"]`);
     if (todoElement) {
-      todoElement.classList.add('completing');
+      todoElement.classList.add("completing");
     }
 
     setTimeout(() => {
-      todos = todos.filter(t => t.id !== todoId);
+      todos = todos.filter((t) => t.id !== todoId);
       renderTodos();
     }, 300);
 
@@ -343,5 +383,5 @@
     renderTodos();
     loadTodos();
   });
-  </script>
+</script>
 {% endblock content %}

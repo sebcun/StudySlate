@@ -1,84 +1,101 @@
-{% extends "base.html" %}
-{% block title %}
-  Dashboard | StudySlate
-{% endblock
-title %}
-{% block styles %}
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-{% endblock styles %}
-{% block content %}
-  <div class="d-flex flex-nowrap vh-100">
-    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
-         style="width: 280px">
-      <a href="/"
-         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-        <span class="fs-4 fw-bold">StudySlate</span>
-      </a>
-      <p class="m-0">Classes</p>
+{% extends "base.html" %} {% block title %} Dashboard | StudySlate {% endblock
+title %} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/dashboard.css') }}"
+/>
+{% endblock styles %} {% block content %}
+<div class="d-flex flex-nowrap vh-100">
+  <div
+    class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+    style="width: 280px"
+  >
+    <a
+      href="/"
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+    >
+      <span class="fs-4 fw-bold">StudySlate</span>
+    </a>
+    <p class="m-0">Classes</p>
+    <hr />
+    <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
       <hr />
-      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-        <hr />
-        <li class="nav-item">
-          <a href="#"
-             class="nav-link"
-             data-bs-toggle="modal"
-             data-bs-target="#create-class-modal"><i class="bi bi-plus-lg pe-3"></i> New Class</a>
+      <li class="nav-item">
+        <a
+          href="#"
+          class="nav-link"
+          data-bs-toggle="modal"
+          data-bs-target="#create-class-modal"
+          ><i class="bi bi-plus-lg pe-3"></i> New Class</a
+        >
+      </li>
+    </ul>
+    <hr />
+    <div class="dropdown">
+      <a
+        href="#"
+        class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <strong>Manage Account</strong>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+        <li>
+          <a class="dropdown-item" href="/logout">Log out</a>
         </li>
       </ul>
-      <hr />
-      <div class="dropdown">
-        <a href="#"
-           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-           data-bs-toggle="dropdown"
-           aria-expanded="false">
-          <strong>Manage Account</strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-          <li>
-            <a class="dropdown-item" href="/logout">Log out</a>
-          </li>
-        </ul>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="create-class-modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div
+      class="modal-content"
+      style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)"
+    >
+      <div class="modal-header d-flex justify-content-center position-relative">
+        <h4 class="modal-title text-center">Create a New Class</h4>
+        <button
+          type="button"
+          class="btn-close position-absolute end-0 me-3"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
+        <p>Class Name</p>
+        <form id="create-class-form" class="d-flex justify-content-center">
+          <input
+            type="text"
+            maxlength="30"
+            class="code-input form-control mx-1"
+            required
+          />
+        </form>
+        <div
+          id="verify-error"
+          class="text-danger text-center mt-3"
+          style="display: none"
+        ></div>
+      </div>
+      <div class="modal-footer justify-content-center" style="border-top: none">
+        <button type="submit" form="create-class-form" class="btn btn-success">
+          Create
+        </button>
       </div>
     </div>
   </div>
-  <div class="modal fade" id="create-class-modal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content"
-           style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
-        <div class="modal-header d-flex justify-content-center position-relative">
-          <h4 class="modal-title text-center">Create a New Class</h4>
-          <button type="button"
-                  class="btn-close position-absolute end-0 me-3"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
-          <p>Class Name</p>
-          <form id="create-class-form" class="d-flex justify-content-center">
-            <input type="text"
-                   maxlength="30"
-                   class="code-input form-control mx-1"
-                   required />
-          </form>
-          <div id="verify-error"
-               class="text-danger text-center mt-3"
-               style="display: none"></div>
-        </div>
-        <div class="modal-footer justify-content-center" style="border-top: none">
-          <button type="submit" form="create-class-form" class="btn btn-success">Create</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
+</div>
+<script>
   async function loadClasses() {
     try {
       const ul = document.getElementById("classes-list");
       const newClassLi = ul.querySelector("li:last-child");
       const loadingLi = document.createElement("li");
       loadingLi.className = "nav-item";
-      loadingLi.innerHTML = '<span class="nav-link text-muted"><i class="bi bi-snowflake"></i> Loading classes...</span>';
+      loadingLi.innerHTML =
+        '<span class="nav-link text-muted"><i class="bi bi-snowflake"></i> Loading classes...</span>';
       ul.innerHTML = "";
       ul.appendChild(loadingLi);
       ul.appendChild(newClassLi);
@@ -105,7 +122,8 @@ title %}
       ul.appendChild(newClassLi);
       const errorLi = document.createElement("li");
       errorLi.className = "nav-item";
-      errorLi.innerHTML = '<span class="nav-link text-danger"><i class="bi bi-exclamation-triangle"></i> Failed to lock in classes. Try again.</span>';
+      errorLi.innerHTML =
+        '<span class="nav-link text-danger"><i class="bi bi-exclamation-triangle"></i> Failed to lock in classes. Try again.</span>';
       ul.insertBefore(errorLi, newClassLi);
     }
   }
@@ -145,5 +163,5 @@ title %}
     });
 
   document.addEventListener("DOMContentLoaded", loadClasses);
-  </script>
+</script>
 {% endblock content %}

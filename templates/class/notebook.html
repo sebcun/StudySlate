@@ -1,49 +1,56 @@
-{% extends "base.html" %}
-{% block title %}
-  Notebook | StudySlate
-{% endblock
-title %}
-{% block styles %}
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
-{% endblock styles %}
-{% block content %}
-  <div class="d-flex flex-nowrap vh-100">
-    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
-         style="width: 280px">
-      <a href="/"
-         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
-        <span class="fs-4 fw-bold">StudySlate</span>
-      </a>
-      <p class="m-0" id="class-name">Loading...</p>
+{% extends "base.html" %} {% block title %} Notebook | StudySlate {% endblock
+title %} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='styles/dashboard.css') }}"
+/>
+{% endblock styles %} {% block content %}
+<div class="d-flex flex-nowrap vh-100">
+  <div
+    class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+    style="width: 280px"
+  >
+    <a
+      href="/"
+      class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none"
+    >
+      <span class="fs-4 fw-bold">StudySlate</span>
+    </a>
+    <p class="m-0" id="class-name">Loading...</p>
+    <hr />
+    <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+      <div id="note-holder"></div>
       <hr />
-      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-        <div id="note-holder"></div>
-        <hr />
-        <li class="nav-item">
-          <a href="#" onclick="createNote(); return false;" class="nav-link"><i class="bi bi-plus-lg pe-3"></i> New Note</a>
-        </li>
-        <li class="nav-item">
-          <a href="/class/{{ class_id }}" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+      <li class="nav-item">
+        <a href="#" onclick="createNote(); return false;" class="nav-link"
+          ><i class="bi bi-plus-lg pe-3"></i> New Note</a
+        >
+      </li>
+      <li class="nav-item">
+        <a href="/class/{{ class_id }}" class="nav-link"
+          ><i class="bi bi-arrow-left pe-3"></i> Back</a
+        >
+      </li>
+    </ul>
+    <hr />
+    <div class="dropdown">
+      <a
+        href="#"
+        class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <strong>Manage Account</strong>
+      </a>
+      <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+        <li>
+          <a class="dropdown-item" href="/logout">Log out</a>
         </li>
       </ul>
-      <hr />
-      <div class="dropdown">
-        <a href="#"
-           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
-           data-bs-toggle="dropdown"
-           aria-expanded="false">
-          <strong>Manage Account</strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-          <li>
-            <a class="dropdown-item" href="/logout">Log out</a>
-          </li>
-        </ul>
-      </div>
     </div>
   </div>
-  <script>
+</div>
+<script>
   const classId = "{{ class_id }}";
   let notes = [];
   let isLoading = true;
@@ -98,9 +105,9 @@ title %}
   async function createNote() {
     try {
       const response = await fetch(`/api/classes/${classId}/notes`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title: 'Untitled'})
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "Untitled" }),
       });
       if (response.ok) {
         const note = await response.json();
@@ -116,5 +123,5 @@ title %}
     renderNotes();
     loadNotes();
   });
-  </script>
+</script>
 {% endblock content %}

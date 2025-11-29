@@ -2,6 +2,11 @@
 
 An all-in-one study platform designed to help students lock in. I made this as I have just started year 12 (australias final year of school) and want to focus on my studies more. This was also made for Siege week 9 for Hackclub.
 
+## Demo
+
+[Live Demo](https://studyslate.sebcun.com)
+[Video Demo](https://streamable.com/f38s66)
+
 ## Features
 
 - **Add Classes**: Create and organize your classes to keep everything tidy.

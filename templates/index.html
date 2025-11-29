@@ -123,4 +123,30 @@
             </li>
         </ul>
     </footer>
+    <div class="modal fade" id="demo-modal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="demoModalLabel">Demo Video</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>If you are coming for Siege and don't want to signup you can view a demo video below. <strong>The theme can be found at the 2:00 minute mark with the lockin timer.</strong></p>
+                    <video controls width="100%">
+                        <source src="{{ url_for('static', filename='images/demo.mp4') }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = new bootstrap.Modal(
+                document.getElementById("demo-modal")
+            );
+            modal.show();
+        });
+    </script>
 {% endblock content %}

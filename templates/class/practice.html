@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}
+  Practice | StudySlate
+{% endblock
+title %}
+{% block styles %}
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/dashboard.css') }}" />
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='styles/cuecard.css') }}" />
+{% endblock styles %}
+{% block content %}
+  <div class="d-flex flex-nowrap vh-100">
+    <div class="d-flex flex-column flex-shrink-0 p-3 sidebar"
+         style="width: 280px">
+      <a href="/"
+         class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4 fw-bold">StudySlate</span>
+      </a>
+      <p class="m-0" id="class-name">Loading...</p>
+      <hr />
+      <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/assignments" class="nav-link">Assignments</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+        </li>
+      </ul>
+      <hr />
+      <div class="dropdown">
+        <a href="#"
+           class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle"
+           data-bs-toggle="dropdown"
+           aria-expanded="false">
+          <strong>email</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          <li>
+            <a class="dropdown-item" href="/logout">Log out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="flex-grow-1 d-flex flex-column">
+      <div class="todo-header d-flex justify-content-between align-items-center p-3">
+        <h1>Practice Mode</h1>
+      </div>
+      <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center p-3">
+        <div id="card-area"
+             class="card p-4 text-center"
+             style="cursor: pointer;
+                    min-height: 200px;
+                    width: 100%;
+                    max-width: 600px">
+          <h2 id="question">Loading...</h2>
+          <p id="answer" style="display: none;"></p>
+        </div>
+        <div class="mt-3 d-flex justify-content-center gap-2">
+          <button id="skip-btn" class="btn btn-secondary">Skip</button>
+          <button id="correct-btn" class="btn btn-success" style="display: none;">Got it correct</button>
+          <button id="incorrect-btn" class="btn btn-danger" style="display: none;">Got it incorrect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  let cards = [];
+  let currentIndex = 0;
+  let replayCards = [];
+  let showingAnswer = false;
+
+  async function loadClass() {
+    const classId = "{{ class_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}`);
+      if (!response.ok) throw new Error("Failed to fetch class");
+      const cls = await response.json();
+      document.getElementById("class-name").textContent = cls.name;
+    } catch (error) {
+      console.error("Error loading class:", error);
+      document.getElementById("class-name").textContent = "Class not found";
+    }
+  }
+
+  async function loadSet() {
+    const classId = "{{ class_id }}";
+    const setId = "{{ cuecards_id }}";
+    try {
+      const response = await fetch(`/api/classes/${classId}/cuecard_sets/${setId}`);
+      if (!response.ok) throw new Error("Failed to fetch set");
+      const setData = await response.json();
+      cards = shuffle(setData.cards || []);
+      currentIndex = 0;
+      replayCards = [];
+      displayCard();
+    } catch (error) {
+      console.error("Error loading set:", error);
+      document.getElementById("question").textContent = "Set not found";
+    }
+  }
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function displayCard() {
+    if (currentIndex >= cards.length) {
+      if (replayCards.length > 0) {
+        cards = shuffle(replayCards);
+        replayCards = [];
+        currentIndex = 0;
+        displayCard();
+      } else {
+        window.location.href = `/class/{{ class_id }}/cuecards/{{ cuecards_id }}`;
+      }
+      return;
+    }
+    const card = cards[currentIndex];
+    document.getElementById("question").textContent = card.question;
+    document.getElementById("answer").style.display = "none";
+    document.getElementById("skip-btn").style.display = "block";
+    document.getElementById("correct-btn").style.display = "none";
+    document.getElementById("incorrect-btn").style.display = "none";
+    showingAnswer = false;
+  }
+
+  document.getElementById("card-area").addEventListener("click", () => {
+    if (!showingAnswer && cards.length > 0) {
+      const card = cards[currentIndex];
+      document.getElementById("answer").textContent = card.answer;
+      document.getElementById("answer").style.display = "block";
+      document.getElementById("skip-btn").style.display = "none";
+      document.getElementById("correct-btn").style.display = "block";
+      document.getElementById("incorrect-btn").style.display = "block";
+      showingAnswer = true;
+    }
+  });
+
+  document.getElementById("skip-btn").addEventListener("click", () => {
+    replayCards.push(cards[currentIndex]);
+    currentIndex++;
+    displayCard();
+  });
+
+  document.getElementById("correct-btn").addEventListener("click", () => {
+    currentIndex++;
+    displayCard();
+  });
+
+  document.getElementById("incorrect-btn").addEventListener("click", () => {
+    replayCards.push(cards[currentIndex]);
+    currentIndex++;
+    displayCard();
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadClass();
+    loadSet();
+  });
+  </script>
+{% endblock content %}

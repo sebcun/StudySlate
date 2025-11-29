@@ -501,5 +501,11 @@ def delete_card(class_id, set_id, card_index):
     except Exception as e:
         return jsonify({'error': str(e)}), 500                                                                                                                                                                                                                
 
+@app.route('/class/<class_id>/cuecards/<cuecards_id>/practice')
+def practice_page(class_id, cuecards_id):
+    if 'access_token' not in session:
+        return redirect(url_for('login'))
+    return render_template('class/practice.html', class_id=class_id, cuecards_id=cuecards_id)
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

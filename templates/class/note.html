@@ -1,14 +1,13 @@
 {% extends "base.html" %}
 {% block title %}
-  Notebook | StudySlate
+  Cuecards | StudySlate
 {% endblock
 title %}
 {% block styles %}
   <link rel="stylesheet"
         href="{{ url_for('static', filename='styles/dashboard.css') }}" />
   <link rel="stylesheet"
-        href="{{ url_for('static', filename='styles/notebook.css') }}" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        href="{{ url_for('static', filename='styles/cuecard.css') }}" />
 {% endblock styles %}
 {% block content %}
   <div class="d-flex flex-nowrap vh-100">
@@ -21,13 +20,27 @@ title %}
       <p class="m-0" id="class-name">Loading...</p>
       <hr />
       <ul id="classes-list" class="nav nav-pills flex-column mb-auto">
-        <div id="note-holder"></div>
-        <hr />
         <li class="nav-item">
-          <a href="#" onclick="createNote(); return false;" class="nav-link"><i class="bi bi-plus-lg pe-3"></i> New Note</a>
+          <a href="/class/{{ class_id }}" class="nav-link">Home</a>
         </li>
         <li class="nav-item">
-          <a href="/class/{{ class_id }}" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
+          <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/assignments" class="nav-link">Assignments</a>
+        </li>
+        <li class="nav-item">
+          <a href="/class/{{ class_id }}/lockin" class="nav-link">Lock In Timer</a>
+        </li>
+        <hr />
+        <li class="nav-item">
+          <a href="/dashboard" class="nav-link"><i class="bi bi-arrow-left pe-3"></i> Back</a>
         </li>
       </ul>
       <hr />
@@ -45,129 +58,141 @@ title %}
         </ul>
       </div>
     </div>
-    <div class="d-flex flex-column flex-grow-1 bg-white">
-      <div class="notebook-toolbar p-2 d-flex align-items-center gap-2 flex-wrap">
-        <select class="form-select form-select-sm"
-                style="width: auto"
-                onchange="formatDoc('fontSize', this.value); this.value='3';">
-          <option value="1">Small</option>
-          <option value="3" selected>Normal</option>
-          <option value="5">Large</option>
-          <option value="7">Huge</option>
-        </select>
-        <div class="vr mx-1"></div>
-        <button class="tool-btn" onclick="formatDoc('bold')" title="Bold">
-          <i class="bi bi-type-bold"></i>
-        </button>
-        <button class="tool-btn" onclick="formatDoc('italic')" title="Italic">
-          <i class="bi bi-type-italic"></i>
-        </button>
-        <button class="tool-btn" onclick="formatDoc('underline')" title="Underline">
-          <i class="bi bi-type-underline"></i>
-        </button>
-        <button class="tool-btn"
-                onclick="formatDoc('strikeThrough')"
-                title="Strikethrough">
-          <i class="bi bi-type-strikethrough"></i>
-        </button>
-        <div class="vr mx-1"></div>
-        <div class="color-picker-container">
-          <button class="tool-btn"
-                  onclick="togglePopup('textColorPopup')"
-                  title="Text Color">
-            <i class="bi bi-palette"></i>
-            <i class="bi bi-chevron-down ms-1" style="font-size: 10px"></i>
-          </button>
-          <div id="textColorPopup" class="color-popup">
-            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold">TEXT COLOR</div>
-            <div class="color-grid" id="textColorGrid"></div>
-          </div>
-        </div>
-        <div class="color-picker-container">
-          <button class="tool-btn"
-                  onclick="togglePopup('hiliteColorPopup')"
-                  title="Highlight Color">
-            <i class="bi bi-highlighter"></i>
-            <i class="bi bi-chevron-down ms-1" style="font-size: 10px"></i>
-          </button>
-          <div id="hiliteColorPopup" class="color-popup">
-            <div class="mb-1 text-muted" style="font-size: 10px; font-weight: bold">HIGHLIGHT</div>
-            <div class="color-grid" id="hiliteColorGrid"></div>
-            <div class="mt-2 pt-2 border-top">
-              <button class="color-swatch no-color-swatch w-100"
-                      onclick="formatDoc('hiliteColor', 'transparent'); togglePopup('hiliteColorPopup')"
-                      title="No Color"></button>
-            </div>
-          </div>
-        </div>
-        <div class="vr mx-1"></div>
-        <button class="tool-btn"
-                onclick="formatDoc('insertUnorderedList')"
-                title="Bullet List">
-          <i class="bi bi-list-ul"></i>
-        </button>
-        <button class="tool-btn"
-                onclick="formatDoc('insertOrderedList')"
-                title="Numbered List">
-          <i class="bi bi-list-ol"></i>
-        </button>
-        <div class="vr mx-1"></div>
-        <button class="tool-btn"
-                onclick="toggleLinedPaper()"
-                title="Toggle Lined Paper">
-          <i class="bi bi-rulers"></i>
-        </button>
-        <div class="vr mx-1"></div>
-        <button id="save-btn" class="tool-btn" onclick="saveNote()" title="Save Note">
-          <i class="bi bi-check"></i>
-        </button>
-        <button class="tool-btn"
+    <div class="flex-grow-1 d-flex flex-column">
+      <div class="todo-header d-flex justify-content-between align-items-center p-3">
+        <h1 id="set-title">Loading...</h1>
+        <button class="add-todo-btn"
                 data-bs-toggle="modal"
-                data-bs-target="#export-note-modal">
-          <i class="bi bi-share-fill"></i>
-        </button>
+                data-bs-target="#add-set-modal">New Set</button>
       </div>
-      <div class="notebook-editor flex-grow-1 p-5"
-           contenteditable="true"
-           spellcheck="false"></div>
+      <div class="flex-grow-1 p-3" style="overflow-y: auto">
+        <div id="games-container" class="todo-container">
+          <a class="todo-section cuecard-game"
+             href="/class/{{ class_id }}/cuecards/{{ cuecards_id }}/practice">
+            <div class="set-title" style="opacity: 1">Practice</div>
+          </a>
+        </div>
+        <div id="cards-container" class="todo-container"></div>
+      </div>
     </div>
   </div>
-  <div class="modal fade" id="export-note-modal" tabindex="-1">
+  <div class="modal fade" id="add-card-modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content"
            style="box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4)">
         <div class="modal-header d-flex justify-content-center position-relative">
-          <h4 class="modal-title text-center">Export This Note</h4>
+          <h4 class="modal-title text-center">New Card</h4>
           <button type="button"
                   class="btn-close position-absolute end-0 me-3"
                   data-bs-dismiss="modal"
                   aria-label="Close"></button>
         </div>
         <div class="modal-body text-center" style="padding: 0.75rem 1.5rem">
-          <div class="row mb-3">
-            <div class="col-6">
-              <button class="btn btn-export shadow w-100"
-                      id="export-pdf"
-                      onclick="exportPdf()">Export as PDF</button>
+          <form id="create-class-form" class="d-flex flex-column align-items-center">
+            <div class="mb-3">
+              <p class="text-center mb-1">Card Name</p>
+              <input id="card-name-input"
+                     type="text"
+                     maxlength="100"
+                     class="code-input form-control"
+                     required />
             </div>
-            <div class="col-6">
-              <button class="btn btn-export shadow w-100"
-                      id="export-txt"
-                      onclick="exportTxt()">Export as TXT</button>
+            <div class="mb-3">
+              <p class="text-center mb-1">Card Answer</p>
+              <input id="card-answer-input"
+                     type="text"
+                     maxlength="10000"
+                     class="code-input form-control"
+                     required />
             </div>
-          </div>
-          <div class="row mb-2">
-            <div class="col-6">
-              <button class="btn btn-export shadow w-100"
-                      id="export-html"
-                      onclick="exportHtml()">Export as HTML</button>
+          </form>
+          <div id="verify-error"
+               class="text-danger text-center mt-3"
+               style="display: none"></div>
+        </div>
+        <div class="modal-footer justify-content-center" style="border-top: none">
+          <button type="submit" form="create-class-form" class="btn btn-success">Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade"
+       id="edit-card-modal"
+       tabindex="-1"
+       aria-labelledby="editCardModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCardModalLabel">Edit Cue Card</h5>
+          <button type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-card-form">
+            <div class="mb-3">
+              <label for="card-question" class="form-label fw-bold">Question</label>
+              <input type="text"
+                     class="form-control"
+                     id="card-question"
+                     placeholder="Enter the question..."
+                     required />
             </div>
-          </div>
+            <div class="mb-3">
+              <label for="card-answer" class="form-label fw-bold">Answer</label>
+              <textarea class="form-control"
+                        id="card-answer"
+                        rows="4"
+                        placeholder="Enter the answer..."
+                        required></textarea>
+            </div>
+            <div id="edit-card-error"
+                 class="text-danger text-center mt-3"
+                 style="display: none"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="delete-card-btn">Delete Card</button>
+          <button type="submit" form="edit-card-form" class="btn btn-primary">Save Changes</button>
         </div>
       </div>
     </div>
   </div>
   <script>
+  let currentSet = null;
+  let editingIndex = null;
+  let isLoading = true;
+
+  function renderCards() {
+    const container = document.getElementById("cards-container");
+    if (isLoading) {
+      container.innerHTML = '<div class="loading">Loading cards...</div>';
+      return;
+    }
+    container.innerHTML =
+      currentSet.cards
+        .map(
+          (card, index) => `
+        <a class="todo-section cuecard-item" data-index="${index}" data-question="${card.question}" data-answer="${card.answer}">
+          <div class="set-title">${card.question}</div>
+          <div class="set-card-number"></div>
+        </a>
+      `
+        )
+        .join("") +
+      `
+        <a data-bs-toggle="modal" data-bs-target="#add-card-modal" class="todo-section-create todo-section">
+          <div class="set-title-icon">
+            <i class="bi bi-plus-circle-fill"></i>
+          </div>
+          <div class="set-card-number">Create New Card</div>
+        </a>
+      `;
+    attachCardEvents();
+  }
+
   async function loadClass() {
     const classId = "{{ class_id }}";
     try {
@@ -181,478 +206,167 @@ title %}
     }
   }
 
-  function formatDoc(cmd, value = null) {
-    if (value) {
-      document.execCommand(cmd, false, value);
-    } else {
-      document.execCommand(cmd);
-    }
-    document.querySelector(".notebook-editor").focus();
-  }
-
-  const textColors = [
-    "#000000",
-    "#434343",
-    "#666666",
-    "#999999",
-    "#b7b7b7",
-    "#d9d9d9",
-    "#ffffff",
-    "#980000",
-    "#ff0000",
-    "#ff9900",
-    "#ffff00",
-    "#00ff00",
-    "#00ffff",
-    "#4a86e8",
-    "#0000ff",
-    "#9900ff",
-    "#ff00ff",
-  ];
-
-  const highlightColors = [
-    "#ffff00",
-    "#00ff00",
-    "#00ffff",
-    "#ff00ff",
-    "#0000ff",
-    "#ff0000",
-    "#000080",
-    "#008000",
-    "#800080",
-    "#808080",
-  ];
-
-  function initColorPickers() {
-    const textGrid = document.getElementById("textColorGrid");
-    const hiliteGrid = document.getElementById("hiliteColorGrid");
-
-    textColors.forEach((color) => {
-      const btn = document.createElement("button");
-      btn.className = "color-swatch";
-      btn.style.backgroundColor = color;
-      btn.onclick = () => {
-        formatDoc("foreColor", color);
-        togglePopup("textColorPopup");
-      };
-      textGrid.appendChild(btn);
-    });
-
-    highlightColors.forEach((color) => {
-      const btn = document.createElement("button");
-      btn.className = "color-swatch";
-      btn.style.backgroundColor = color;
-      btn.onclick = () => {
-        formatDoc("hiliteColor", color);
-        togglePopup("hiliteColorPopup");
-      };
-      hiliteGrid.appendChild(btn);
-    });
-  }
-
-  function togglePopup(id) {
-    document.querySelectorAll(".color-popup").forEach((p) => {
-      if (p.id !== id) p.classList.remove("show");
-    });
-    document.getElementById(id).classList.toggle("show");
-  }
-
-  document.addEventListener("click", function (event) {
-    if (!event.target.closest(".color-picker-container")) {
-      document
-        .querySelectorAll(".color-popup")
-        .forEach((p) => p.classList.remove("show"));
-    }
-  });
-
-  function toggleLinedPaper() {
-    const editor = document.querySelector(".notebook-editor");
-    editor.classList.toggle("lined-paper");
-  }
-
-  async function loadNotes() {
+  async function loadSet() {
     const classId = "{{ class_id }}";
-    const noteId = "{{ note_id }}";
+    const setId = "{{ cuecards_id }}";
     try {
-      const response = await fetch(`/api/classes/${classId}/notes`);
-      if (!response.ok) throw new Error("Failed to fetch notes");
-      const notes = await response.json();
-      const list = document.getElementById("note-holder");
-      list.innerHTML = "";
-      notes.forEach((note) => {
-        const li = document.createElement("li");
-        li.className = "nav-item";
-
-        const a = document.createElement("a");
-        a.href = `/class/${classId}/notebook/${note.id}`;
-        a.className = "nav-link";
-        a.textContent = note.title;
-
-        li.appendChild(a);
-
-        list.appendChild(li);
-      });
+      const response = await fetch(
+        `/api/classes/${classId}/cuecard_sets/${setId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch set");
+      currentSet = await response.json();
+      document.getElementById("set-title").textContent = currentSet.name;
     } catch (error) {
-      console.error("Error loading notes:", error);
-    }
-  }
-
-  async function saveNote() {
-    const editor = document.querySelector(".notebook-editor");
-    const content = editor.innerHTML;
-
-    const classId = "{{ class_id }}";
-    const noteId = "{{ note_id }}";
-    let title = "Untitled";
-    const tempDiv = document.createElement("div");
-    tempDiv.innerHTML = content;
-    const firstH1 = tempDiv.querySelector("h1");
-    if (firstH1 && firstH1.textContent.trim()) {
-      title = firstH1.textContent.trim();
-    }
-
-    const saveBtn = document.getElementById("save-btn");
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
-
-    try {
-      const response = await fetch(`/api/classes/${classId}/notes/${noteId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content }),
-      });
-      if (!response.ok) throw new Error("Failed to save note");
-      console.log("Note saved successfully");
-      saveBtn.innerHTML = '<i class="bi bi-check2-all"></i>';
-      setTimeout(() => {
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = '<i class="bi bi-check"></i>';
-      }, 2000);
-    } catch (error) {
-      console.error("Error saving note:", error);
-      saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i class="bi bi-check"></i>';
-    }
-  }
-
-  async function createNote() {
-    const classId = "{{ class_id }}";
-    const noteId = "{{ note_id }}";
-    try {
-      const response = await fetch(`/api/classes/${classId}/notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "Untitled" }),
-      });
-      if (response.ok) {
-        const note = await response.json();
-        window.location.href = `/class/${classId}/notebook/${note.id}`;
-      }
-    } catch (error) {
-      console.error("Error creating note:", error);
-    }
-  }
-
-  async function exportPdf() {
-    const button = document.getElementById("export-pdf");
-    const editor = document.querySelector(".notebook-editor");
-
-    button.disabled = true;
-    button.textContent = "Exporting...";
-
-    try {
-      const options = {
-        margin: 1,
-        filename: "note.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-      };
-
-      await html2pdf().set(options).from(editor).save();
-
-      button.textContent = "Export as PDF";
-    } catch (error) {
-      console.error("PDF export failed:", error);
-      alert("Failed to export PDF. Please try again.");
-      button.textContent = "Export as PDF";
+      console.error("Error loading set:", error);
+      document.getElementById("set-title").textContent = "Set not found";
     } finally {
-      button.disabled = false;
+      isLoading = false;
+      renderCards();
     }
   }
 
-  async function exportHtml() {
-    const button = document.getElementById("export-html");
-    const editor = document.querySelector(".notebook-editor");
+  function attachCardEvents() {
+    const cuecardItems = document.querySelectorAll(".cuecard-item");
+    cuecardItems.forEach((item) => {
+      const setCardNumber = item.querySelector(".set-card-number");
+      const setTitle = item.querySelector(".set-title");
+      const originalText = setCardNumber.textContent;
+      const question = item.dataset.question;
+      const answer = item.dataset.answer;
+      const index = item.dataset.index;
 
-    button.disabled = true;
-    button.textContent = "Exporting...";
+      item.addEventListener("mouseenter", () => {
+        fadeText(
+          setCardNumber,
+          "Left Click to Reveal Answer, Right Click to Edit"
+        );
+      });
 
-    try {
-      const htmlContent = `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Note</title>
-      </head>
-      <body>
-        ${editor.innerHTML}
-      </body>
-    </html>`;
-
-      const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "note.html";
-      document.body.appendChild(a);
-      a.click();
-
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      button.textContent = "Export as HTML";
-    } catch (error) {
-      console.error("HTML export failed:", error);
-      alert("Failed to export HTML. Please try again.");
-      button.textContent = "Export as HTML";
-    } finally {
-      button.disabled = false;
-    }
-  }
-
-  async function exportTxt() {
-    const button = document.getElementById("export-txt");
-    const editor = document.querySelector(".notebook-editor");
-
-    button.disabled = true;
-    button.textContent = "Exporting...";
-
-    try {
-      function htmlToText(html) {
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        let text = "";
-        let olCounter = 0;
-
-        function traverse(node) {
-          if (node.nodeType === Node.TEXT_NODE) {
-            text += node.textContent;
-          } else if (node.tagName === "BR") {
-            text += "\n";
-          } else if (node.tagName === "LI") {
-            const parent = node.parentElement;
-            if (parent && parent.tagName === "UL") {
-              text += "- ";
-            } else if (parent && parent.tagName === "OL") {
-              olCounter++;
-              text += olCounter + ". ";
-            }
-            node.childNodes.forEach(traverse);
-            text += "\n";
-          } else if (
-            [
-              "P",
-              "DIV",
-              "H1",
-              "H2",
-              "H3",
-              "H4",
-              "H5",
-              "H6",
-              "UL",
-              "OL",
-            ].includes(node.tagName)
-          ) {
-            if (node.tagName === "OL") olCounter = 0;
-            node.childNodes.forEach(traverse);
-            if (!["UL", "OL"].includes(node.tagName)) text += "\n";
-          } else {
-            node.childNodes.forEach(traverse);
-          }
+      item.addEventListener("mouseleave", () => {
+        fadeText(setCardNumber, originalText);
+        if (setTitle.textContent === answer) {
+          fadeText(setTitle, question);
+          setTitle.style.color = "";
         }
+      });
 
-        tempDiv.childNodes.forEach(traverse);
-        return text.trim();
-      }
+      item.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (setTitle.textContent === question) {
+          fadeText(setTitle, answer);
+          setTitle.style.color = "#6e6e6e";
+        } else {
+          fadeText(setTitle, question);
+          setTitle.style.color = "";
+        }
+      });
 
-      const text = htmlToText(editor.innerHTML);
-
-      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "note.txt";
-      document.body.appendChild(a);
-      a.click();
-
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      button.textContent = "Export as TXT";
-    } catch (error) {
-      console.error("TXT export failed:", error);
-      alert("Failed to export TXT. Please try again.");
-      button.textContent = "Export as TXT";
-    } finally {
-      button.disabled = false;
-    }
-  }
-
-  async function loadNote() {
-    const classId = "{{ class_id }}";
-    const noteId = "{{ note_id }}";
-    try {
-      const response = await fetch(`/api/classes/${classId}/notes/${noteId}`);
-      if (!response.ok) throw new Error("Failed to fetch note");
-      const note = await response.json();
-      const editor = document.querySelector(".notebook-editor");
-      editor.innerHTML = note.content || "<h1>Loading...</h1><br><br><br>";
-      makeImagesDraggable();
-    } catch (error) {
-      console.error("Error loading note:", error);
-    }
-  }
-  let autosaveTimer;
-  let minuteTimer;
-
-  function handlePaste(e) {
-    e.preventDefault();
-    const clipboardData = e.clipboardData || window.clipboardData;
-    const items = clipboardData.items;
-    for (let i = 0; i < items.length; i++) {
-      if (items[i].type.indexOf("image") !== -1) {
-        const blob = items[i].getAsFile();
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          const img = document.createElement("img");
-          img.src = event.target.result;
-          img.style.width = "100%";
-          img.style.height = "100%";
-          img.style.objectFit = "contain";
-          const container = createImageContainer(img);
-          const editor = document.querySelector(".notebook-editor");
-          editor.appendChild(container);
-        };
-        reader.readAsDataURL(blob);
-      }
-    }
-  }
-
-  function createImageContainer(img) {
-    const container = document.createElement("div");
-    container.className = "image-container";
-    container.style.position = "absolute";
-    container.style.left = "100px";
-    container.style.top = "100px";
-    container.style.zIndex = "10";
-    container.style.overflow = "hidden";
-    container.style.cursor = "move";
-    container.style.border = "1px dashed #ccc";
-    container.style.minWidth = "50px";
-    container.style.minHeight = "50px";
-    container.style.width = "200px";
-    container.style.height = "200px";
-    container.appendChild(img);
-
-    const resizeHandle = document.createElement("div");
-    resizeHandle.className = "resize-handle";
-    resizeHandle.style.position = "absolute";
-    resizeHandle.style.bottom = "0";
-    resizeHandle.style.right = "0";
-    resizeHandle.style.width = "10px";
-    resizeHandle.style.height = "10px";
-    resizeHandle.style.background = "#ccc";
-    resizeHandle.style.cursor = "nw-resize";
-    container.appendChild(resizeHandle);
-
-    addDragListeners(container);
-    addResizeListeners(container, resizeHandle);
-    return container;
-  }
-
-  function addResizeListeners(container, handle) {
-    let isResizing = false;
-    let startX, startY, startWidth, startHeight;
-    handle.addEventListener("mousedown", (e) => {
-      isResizing = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      startWidth = parseInt(container.style.width || 200);
-      startHeight = parseInt(container.style.height || 200);
-      e.preventDefault();
-      e.stopPropagation();
-    });
-    document.addEventListener("mousemove", (e) => {
-      if (isResizing) {
-        const newWidth = Math.max(startWidth + (e.clientX - startX), 50);
-        const newHeight = Math.max(startHeight + (e.clientY - startY), 50);
-        container.style.width = newWidth + "px";
-        container.style.height = newHeight + "px";
-      }
-    });
-    document.addEventListener("mouseup", () => {
-      isResizing = false;
+      item.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        editingIndex = index;
+        document.getElementById("card-question").value = question;
+        document.getElementById("card-answer").value = answer;
+        new bootstrap.Modal(document.getElementById("edit-card-modal")).show();
+      });
     });
   }
 
-  function addDragListeners(container) {
-    let isDragging = false;
-    let offsetX, offsetY;
-    container.addEventListener("mousedown", (e) => {
-      isDragging = true;
-      offsetX = e.clientX - parseInt(container.style.left || 0);
-      offsetY = e.clientY - parseInt(container.style.top || 0);
-      e.preventDefault();
-      e.stopPropagation();
-    });
-    document.addEventListener("mousemove", (e) => {
-      if (isDragging) {
-        container.style.left = e.clientX - offsetX + "px";
-        container.style.top = e.clientY - offsetY + "px";
-      }
-    });
-    document.addEventListener("mouseup", () => {
-      isDragging = false;
-    });
-  }
-
-  function makeImagesDraggable() {
-    const editor = document.querySelector(".notebook-editor");
-    const imgs = editor.querySelectorAll("img:not(.image-container img)");
-    imgs.forEach((img) => {
-      const container = createImageContainer(img);
-      img.parentElement.replaceChild(container, img);
-    });
-    const containers = editor.querySelectorAll(".image-container");
-    containers.forEach((container) => {
-      addDragListeners(container);
-      const handle = container.querySelector('.resize-handle');
-      if (handle) {
-        addResizeListeners(container, handle);
-      }
-    });
+  function fadeText(element, newText) {
+    element.style.opacity = 0;
+    setTimeout(() => {
+      element.textContent = newText;
+      element.style.opacity = 1;
+    }, 150);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
-    initColorPickers();
-    loadNotes();
-    loadNote();
-    const editor = document.querySelector(".notebook-editor");
-    if (!editor.innerHTML.trim()) {
-      editor.innerHTML = "<h1>Loading...</h1><br><br><br>";
-    }
-
-    editor.addEventListener("input", () => {
-      clearTimeout(autosaveTimer);
-      autosaveTimer = setTimeout(saveNote, 3000);
-    });
-    minuteTimer = setInterval(saveNote, 60000);
-    editor.addEventListener("paste", handlePaste);
+    loadSet();
   });
+
+  document
+    .getElementById("create-class-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const classId = "{{ class_id }}";
+      const setId = "{{ cuecards_id }}";
+      const question = document.getElementById("card-name-input").value.trim();
+      const answer = document.getElementById("card-answer-input").value.trim();
+      if (!question || !answer) return;
+      try {
+        const response = await fetch(
+          `/api/classes/${classId}/cuecard_sets/${setId}/cards`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, answer }),
+          }
+        );
+        if (!response.ok) throw new Error("Failed to create card");
+        document.getElementById("card-name-input").value = "";
+        document.getElementById("card-answer-input").value = "";
+        bootstrap.Modal.getInstance(
+          document.getElementById("add-card-modal")
+        ).hide();
+        loadSet();
+      } catch (error) {
+        console.error("Error creating card:", error);
+        document.getElementById("verify-error").textContent = error.message;
+        document.getElementById("verify-error").style.display = "block";
+      }
+    });
+
+  document
+    .getElementById("edit-card-form")
+    .addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const classId = "{{ class_id }}";
+      const setId = "{{ cuecards_id }}";
+      const question = document.getElementById("card-question").value.trim();
+      const answer = document.getElementById("card-answer").value.trim();
+      if (!question || !answer || editingIndex === null) return;
+      try {
+        const response = await fetch(
+          `/api/classes/${classId}/cuecard_sets/${setId}/cards/${editingIndex}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question, answer }),
+          }
+        );
+        if (!response.ok) throw new Error("Failed to update card");
+        bootstrap.Modal.getInstance(
+          document.getElementById("edit-card-modal")
+        ).hide();
+        loadSet();
+      } catch (error) {
+        console.error("Error updating card:", error);
+        document.getElementById("edit-card-error").textContent = error.message;
+        document.getElementById("edit-card-error").style.display = "block";
+      }
+    });
+
+  document
+    .getElementById("delete-card-btn")
+    .addEventListener("click", async () => {
+      const classId = "{{ class_id }}";
+      const setId = "{{ cuecards_id }}";
+      if (editingIndex === null) return;
+      try {
+        const response = await fetch(
+          `/api/classes/${classId}/cuecard_sets/${setId}/cards/${editingIndex}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) throw new Error("Failed to delete card");
+        bootstrap.Modal.getInstance(
+          document.getElementById("edit-card-modal")
+        ).hide();
+        loadSet();
+      } catch (error) {
+        console.error("Error deleting card:", error);
+      }
+    });
   </script>
 {% endblock content %}

@@ -44,8 +44,33 @@ title %}
     </div>
   </div>
   <script>
+  const classId = "{{ class_id }}";
+  let notes = [];
+  let isLoading = true;
+
+  function renderNotes() {
+    const list = document.getElementById("note-holder");
+    if (isLoading) {
+      list.innerHTML = '<div class="loading">Loading notes...</div>';
+      return;
+    }
+    list.innerHTML = "";
+    notes.forEach((note) => {
+      const li = document.createElement("li");
+      li.className = "nav-item";
+
+      const a = document.createElement("a");
+      a.href = `/class/${classId}/notebook/${note.id}`;
+      a.className = "nav-link";
+      a.textContent = note.title;
+
+      li.appendChild(a);
+
+      list.appendChild(li);
+    });
+  }
+
   async function loadClass() {
-    const classId = "{{ class_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}`);
       if (!response.ok) throw new Error("Failed to fetch class");
@@ -56,34 +81,21 @@ title %}
       document.getElementById("class-name").textContent = "Class not found";
     }
   }
+
   async function loadNotes() {
-    const classId = "{{ class_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}/notes`);
       if (!response.ok) throw new Error("Failed to fetch notes");
-      const notes = await response.json();
-      const list = document.getElementById("note-holder");
-      list.innerHTML = "";
-      notes.forEach((note) => {
-        const li = document.createElement("li");
-        li.className = "nav-item";
-
-        const a = document.createElement("a");
-        a.href = `/class/${classId}/notebook/${note.id}`;
-        a.className = "nav-link";
-        a.textContent = note.title;
-
-        li.appendChild(a);
-
-        list.appendChild(li);
-      });
+      notes = await response.json();
     } catch (error) {
       console.error("Error loading notes:", error);
+    } finally {
+      isLoading = false;
+      renderNotes();
     }
   }
 
   async function createNote() {
-    const classId = "{{ class_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}/notes`, {
         method: 'POST',
@@ -101,6 +113,7 @@ title %}
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
+    renderNotes();
     loadNotes();
   });
   </script>

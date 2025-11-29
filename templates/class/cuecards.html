@@ -27,7 +27,7 @@ title %}
           <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
         </li>
         <li class="nav-item">
-          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+          <a href="/class/{{ class_id }}/cuecards" class="nav-link active">Cue Cards</a>
         </li>
         <li class="nav-item">
           <a href="/class/{{ class_id }}/todo" class="nav-link">To Do</a>
@@ -100,8 +100,38 @@ title %}
     </div>
   </div>
   <script>
+  const classId = "{{ class_id }}";
+  let sets = [];
+  let isLoading = true;
+
+  function renderSets() {
+    const container = document.getElementById("sets-container");
+    if (isLoading) {
+      container.innerHTML = '<div class="loading">Loading cue card sets...</div>';
+      return;
+    }
+    container.innerHTML =
+      sets
+        .map(
+          (set) => `
+      <a href="/class/${classId}/cuecards/${set.id}" class="todo-section">
+        <div class="set-title">${set.name}</div>
+        <div class="set-card-number">0 Cards</div>
+      </a>
+    `
+        )
+        .join("") +
+      `
+      <a data-bs-toggle="modal" data-bs-target="#add-set-modal" class="todo-section-create todo-section">
+        <div class="set-title-icon">
+          <i class="bi bi-plus-circle-fill"></i>
+        </div>
+        <div class="set-card-number">Create New Set</div>
+      </a>
+    `;
+  }
+
   async function loadClass() {
-    const classId = "{{ class_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}`);
       if (!response.ok) throw new Error("Failed to fetch class");
@@ -114,38 +144,21 @@ title %}
   }
 
   async function loadSets() {
-    const classId = "{{ class_id }}";
     try {
       const response = await fetch(`/api/classes/${classId}/cuecard_sets`);
       if (!response.ok) throw new Error("Failed to fetch sets");
-      const sets = await response.json();
-      const container = document.getElementById("sets-container");
-      container.innerHTML =
-        sets
-          .map(
-            (set) => `
-        <a href="/class/${classId}/cuecards/${set.id}" class="todo-section">
-          <div class="set-title">${set.name}</div>
-          <div class="set-card-number">0 Cards</div>
-        </a>
-      `
-          )
-          .join("") +
-        `
-        <a data-bs-toggle="modal" data-bs-target="#add-set-modal" class="todo-section-create todo-section">
-          <div class="set-title-icon">
-            <i class="bi bi-plus-circle-fill"></i>
-          </div>
-          <div class="set-card-number">Create New Set</div>
-        </a>
-      `;
+      sets = await response.json();
     } catch (error) {
       console.error("Error loading sets:", error);
+    } finally {
+      isLoading = false;
+      renderSets();
     }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
+    renderSets();
     loadSets();
   });
 
@@ -153,7 +166,6 @@ title %}
     .getElementById("add-set-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-      const classId = "{{ class_id }}";
       const name = e.target.querySelector("input").value.trim();
       if (!name) return;
       try {

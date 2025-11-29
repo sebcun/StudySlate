@@ -27,6 +27,9 @@
           <a href="/class/{{ class_id }}/notebook" class="nav-link">Notebook</a>
         </li>
         <li class="nav-item">
+          <a href="/class/{{ class_id }}/cuecards" class="nav-link">Cue Cards</a>
+        </li>
+        <li class="nav-item">
           <a href="/class/{{ class_id }}/todo" class="nav-link active">To Do</a>
         </li>
         <li class="nav-item">
@@ -70,10 +73,7 @@
               <span class="section-count" id="active-count">0</span>
             </div>
             <div id="active-todos">
-              <div class="empty-state">
-                <div class="empty-state-icon"></div>
-                <div class="empty-state-text">No active tasks. Time to add some goals!</div>
-              </div>
+              <div class="loading">Loading todos...</div>
             </div>
           </div>
           <div class="todo-section">
@@ -82,10 +82,7 @@
               <span class="section-count" id="completed-count">0</span>
             </div>
             <div id="completed-todos">
-              <div class="empty-state">
-                <div class="empty-state-icon"></div>
-                <div class="empty-state-text">Complete tasks to see them here</div>
-              </div>
+              <div class="loading">Loading todos...</div>
             </div>
           </div>
         </div>
@@ -124,6 +121,7 @@
   <script>
   const classId = "{{ class_id }}";
   let todos = [];
+  let isLoading = true;
 
   function renderTodos() {
     const activeTodos = todos.filter(t => !t.done);
@@ -143,6 +141,12 @@
 
     const activeContainer = document.getElementById('active-todos');
     const completedContainer = document.getElementById('completed-todos');
+
+    if (isLoading) {
+      activeContainer.innerHTML = '<div class="loading">Loading todos...</div>';
+      completedContainer.innerHTML = '<div class="loading">Loading todos...</div>';
+      return;
+    }
 
     if (activeTodos.length === 0) {
       activeContainer.innerHTML = `
@@ -194,9 +198,11 @@
       const response = await fetch(`/api/classes/${classId}/todos`);
       if (!response.ok) throw new Error("Failed to fetch todos");
       todos = await response.json();
-      renderTodos();
     } catch (error) {
       console.error("Error loading todos:", error);
+    } finally {
+      isLoading = false;
+      renderTodos();
     }
   }
 
@@ -334,6 +340,7 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     loadClass();
+    renderTodos();
     loadTodos();
   });
   </script>
